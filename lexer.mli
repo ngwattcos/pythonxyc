@@ -24,7 +24,7 @@ let _singlequote_ = '\''
 let _true_ = 'True'
 let _false = 'False'
 
-let _string_ = '"'[_^'"']'"'
+let _string_ = '"'[_^'"']*'"'
 
 let _number_ = ['-']{0-1}['1'-'9']*['0'-'9']{1}['.']*['0'-'9']*
 let _var_ = ['a'-'z' 'A'-'Z' '_']+['a'-'z' 'A'-'Z' '_' '0'-'9']*

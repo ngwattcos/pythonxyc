@@ -94,6 +94,8 @@ let _continue_ = 'continue'
 
 let _class_ = 'class'
 
+let _dot_ = '.'
+
 (* functions *)
 let _def_ = 'def'
 let _lambda_ = 'lambda'

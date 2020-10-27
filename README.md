@@ -1,2 +1,2 @@
 # pythonxyc
-a simple transpiler for pythonxy, Python-like syntax that compiles down into JSX.
+a simple transpiler for pythonxy, a Python-like syntax that compiles down into JSX.

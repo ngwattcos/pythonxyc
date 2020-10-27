@@ -9,6 +9,11 @@ Definitions
 
  *)
 
+ (* whitespace *)
+ let _newline_ = '\n'
+ let _tab_ = '\t'
+ let _whitespace_ = '\s'
+
 (* optional minus sign + any digit* + 1-9{1} *)
 let _doublequote_ = '"'
 

@@ -10,6 +10,7 @@ Definitions
  *)
 
  (* whitespace *)
+ let _crlf_ = '\r\n'
  let _newline_ = '\n'
  let _tab_ = '\t'
  let _whitespace_ = '\s'

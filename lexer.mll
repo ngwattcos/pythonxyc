@@ -1,6 +1,63 @@
 (* header *)
 {
   open Printf
+
+  let token =
+  | SQUOTE
+  | DQUOTE
+  | BOOL of bool
+  | STRING of string
+  | INT of int
+  | FLOAT of float
+  | VAR of string
+  | EQUALS
+  | PLUS_EQUALS
+  | MINUS_EQUALS
+  | TIMES_EQUALS
+  | DIVIDE_EQUALS
+  | MODULO_EQUALS
+  | DOUBLE_EQUALS
+  | PLUS
+  | MINUS
+  | TIMES
+  | EXP
+  | DIVIDE
+  | FLOOR_DIVIDE
+  | MODULO
+  | GT
+  | GE
+  | LT
+  | LE
+  | LPAREN
+  | RPAREN
+  | LBRACKET
+  | RBRACKET
+  | LBRACE
+  | RBRACE
+  | COMMA
+  | COLON
+  | END
+  | REACT
+  | DOT
+  | AND
+  | OR
+  | NOT
+  | IN
+  | IS
+  | IF
+  | ELIF
+  | ELSE
+  | WHILE
+  | FOR
+  | BREAK
+  | CONTINUE
+  | CLASS
+  | DEF
+  | LAMBDA
+  | TRY
+  | EXCEPT
+  | RAISE
+  | DELETE
 }
 
 (* 
@@ -34,7 +91,8 @@ let _false_ = "False"
 let _string_ = '\"'(_[^'\"'])*'\"'
 
 (* let _number_ = "-"{0-1}['1'-'9']*['0'-'9']{1}['\.']*['0'-'9']* *)
-let _number_ = "-"?['1'-'9']*['0'-'9']"."['0'-'9']*
+let _int_ = "-"?['1'-'9']*['0'-'9']
+let _float_ = "-"?['1'-'9']*['0'-'9']"."['0'-'9']*
 let _var_ = ['a'-'z' 'A'-'Z' '_']+['a'-'z' 'A'-'Z' '_' '0'-'9']*
 
 (* assignment operators *)
@@ -128,65 +186,71 @@ rules
 
 
 
-rule token = parse
+rule tokens = parse
 | _singlelinecomment_ { token lexbuf }
 | _multilinecomment_ { token lexbuf }
-| _doublequote_ { print_endline "DOUBLE_QUOTE" }
-| _singlequote_ { print_endline "SINGLE_QUOTE" }
-| _true_ { print_endline "TRUE"}
-| _false_ { print_endline "FALSE"}
-| _string_ as string { print_endline ("STR(" ^ string ")") }
-| _number_ as number { print_endline ("NUM(" ^ number ^ ")") }
-| _var_ as var { print_endline ("VAR(" ^ var ^ ")")}
-| _equals_ { print_endline "EQUALS" }
-| _plusequals_ { print_endline "PLUS_EQUALS" }
-| _minusequals_ { print_endline "MINUS_EQUALS" }
-| _timesequals_ { print_endline "TIMES_EQUALS" }
-| _divideequals_ { print_endline "DIVIDE_EQUALS" }
-| _moduloequals_ { print_endline "MODULO_EQUALS" }
-| _doubleequals_ { print_endline "DOUBLE_EQUALS" }
-| _and_ { print_endline "AND" }
-| _or_ { print_endline "OR" }
-| _not_ { print_endline "NOT" }
-| _in_ { print_endline "IN"}
-| _is_ { print_endline "IS" }
-| _plus_ { print_endline "PLUS"}
-| _minus_ { print_endline "MINUS"}
-| _times_ { print_endline "TIMES"}
-| _exp_ { print_endline "EXP"}
-| _divide_ { print_endline "DIVIDE"}
-| _floordivide_ { print_endline "FLOOR_DIVIDE"}
-| _modulo_ { print_endline "MODULO"}
-| _gt_ { print_endline "GT"}
-| _ge_ { print_endline "GE"}
-| _lt_ { print_endline "LT"}
-| _le_ { print_endline "LE"}
-| _lparen_ { print_endline "LEFT_PAREN"}
-| _rparen_ { print_endline "RIGHT_PAREN"}
-| _lbracket_ { print_endline "LEFT_BRACKET"}
-| _rbracket_ { print_endline "RIGHT_BRACKET"}
-| _comma_ { print_endline "COMMA"}
-| _lbrace_ { print_endline "LEFT_BRACE"}
-| _rbrace_ { print_endline "RIGHT_BRACE"}
-| _colon_ { print_endline "COLON"}
-| _endblock_ { print_endline "END"}
-| _reactblock_ { print_endline "REACT"}
-| _if_ { print_endline "IF"}
-| _elif_ { print_endline "ELIF"}
-| _else_ { print_endline "ELSE"}
-| _while_ { print_endline "WHILE"}
-| _for_ { print_endline "FOR"}
-| _break_ { print_endline "BREAK"}
-| _continue_ { print_endline "CONTINUE"}
-| _class_ { print_endline "CLASS"}
-| _dot_ { print_endline "DOT"}
-| _def_ { print_endline "DEF"}
-| _lambda_ { print_endline "LAMBDA"}
-| _return_ { print_endline "RETURN"}  
-| _try_ { print_endline "TRY"}
-| _except_ { print_endline "EXCEPT"}
-| _raise_ { print_endline "RAISE"}
-| _delete_ { print_endline "DELETE"}
+| [' ' '\t' '\n'] { token lexbuf }
+| _doublequote_ { print_endline "DOUBLE_QUOTE"; DQUOTE }
+| _singlequote_ { print_endline "SINGLE_QUOTE"; SQUOTE }
+| _true_ as b { print_endline "TRUE"; BOOL b}
+| _false_ as b { print_endline "FALSE" BOOL b}
+| _string_ as string { print_endline ("STR(" ^ string ")"); STRING string }
+| _int_ as int { print_endline ("NUM(" ^ int ^ ")"); INT int }
+| _float_ as float { print_endline ("NUM(" ^ float ^ ")"); FLOAT float }
+| _var_ as var { print_endline ("VAR(" ^ var ^ ")"); VAR var}
+| _equals_ { print_endline "EQUALS"; EQUALS }
+| _plusequals_ { print_endline "PLUS_EQUALS"; PLUS_EQUALS }
+| _minusequals_ { print_endline "MINUS_EQUALS"; MINUS_EQUALS }
+| _timesequals_ { print_endline "TIMES_EQUALS"; TIMES_EQUALS }
+| _divideequals_ { print_endline "DIVIDE_EQUALS"; DIVIDE_EQUALS }
+| _moduloequals_ { print_endline "MODULO_EQUALS"; MODULO_EQUALS }
+| _doubleequals_ { print_endline "DOUBLE_EQUALS"; DOUBLE_EQUALS }
+| _plus_ { print_endline "PLUS"; PLUS }
+| _minus_ { print_endline "MINUS"; MINUS }
+| _times_ { print_endline "TIMES"; TIMES }
+| _exp_ { print_endline "EXP"; EXP}
+| _divide_ { print_endline "DIVIDE"; DIVIDE}
+| _floordivide_ { print_endline "FLOOR_DIVIDE"; FLOOR_DIVIDE}
+| _modulo_ { print_endline "MODULO"; MODULO}
+| _gt_ { print_endline "GT"; GT}
+| _ge_ { print_endline "GE"; GE}
+| _lt_ { print_endline "LT"; LT}
+| _le_ { print_endline "LE"; LE}
+| _lparen_ { print_endline "LEFT_PAREN"; LPAREN }
+| _rparen_ { print_endline "RIGHT_PAREN"; RPAREN }
+| _lbracket_ { print_endline "LEFT_BRACKET"; LBRACKET }
+| _rbracket_ { print_endline "RIGHT_BRACKET"; RBRACKET }
+| _comma_ { print_endline "COMMA"; COMMA }
+| _lbrace_ { print_endline "LEFT_BRACE"; LBRACE }
+| _rbrace_ { print_endline "RIGHT_BRACE"; RBRACE }
+| _colon_ { print_endline "COLON"; COLON }
+| _endblock_ { print_endline "END"; END }
+| _reactblock_ { print_endline "REACT"; REACT }
+| _dot_ { print_endline "DOT"; DOT }
+| _and_ { print_endline "AND"; AND }
+| _or_ { print_endline "OR"; OR }
+| _not_ { print_endline "NOT"; NOT }
+| _in_ { print_endline "IN"; IN}
+| _is_ { print_endline "IS"; IS  }
+| _if_ { print_endline "IF"; IF}
+| _elif_ { print_endline "ELIF"; ELIF }
+| _else_ { print_endline "ELSE"; ELSE }
+| _while_ { print_endline "WHILE"; WHILE }
+| _for_ { print_endline "FOR"; FOR }
+| _break_ { print_endline "BREAK"; BREAK }
+| _continue_ { print_endline "CONTINUE"; CONTINUE }
+| _class_ { print_endline "CLASS"; CLASS }
+| _def_ { print_endline "DEF"; DEF }
+| _lambda_ { print_endline "LAMBDA"; LAMBDA }
+| _return_ { print_endline "RETURN"; RETURN }
+| _try_ { print_endline "TRY"; TRY }
+| _except_ { print_endline "EXCEPT"; EXCEPT }
+| _raise_ { print_endline "RAISE"; RAISE }
+| _delete_ { print_endline "DELETE"; DELETE }
+| _ as c
+  { printf "Unrecognized character: %c\n" c }
+| eof
+  { raise End_of_file }
 
 
 
@@ -195,3 +259,21 @@ rule token = parse
 trailer
 
  *)
+
+ {
+  let rec parse lexbuf =
+  let token = toy_lang lexbuf in
+  parse lexbuf
+
+  let main () =
+    let cin =
+      if Array.length Sys.argv > 1
+      then open_in Sys.argv.(1)
+      else stdin
+    in
+    let lexbuf = Lexing.from_channel cin in
+    try parse lexbuf
+    with End_of_file -> ()
+
+  let _ = Printexc.print main ()
+ }

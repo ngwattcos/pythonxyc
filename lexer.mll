@@ -2,7 +2,7 @@
 {
   open Printf
 
-  let token =
+  type token =
   | SQUOTE
   | DQUOTE
   | BOOL of bool

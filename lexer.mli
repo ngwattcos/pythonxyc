@@ -9,11 +9,19 @@ Definitions
 
  *)
 
- (* whitespace *)
- let _crlf_ = '\r\n'
- let _newline_ = '\n'
- let _tab_ = '\t'
- let _whitespace_ = '\s'
+
+
+(* whitespace *)
+let _crlf_ = '\r\n'
+let _newline_ = '\n'
+let w = ['a'-'z' 'A'-'Z' '0'-'9' '_']
+let eol = '\n' | '\r\n'
+let _tab_ = '\t'
+let _whitespace_ = '\s'
+ 
+(* comments *)
+let _singlelinecomment_ = '#'['_']*eol
+let _multilinecomment_ = ['\'']{3}[_]*['\'']{3}
 
 (* optional minus sign + any digit* + 1-9{1} *)
 let _doublequote_ = '"'
@@ -24,9 +32,9 @@ let _singlequote_ = '\''
 let _true_ = 'True'
 let _false = 'False'
 
-let _string_ = '"'[_^'"']*'"'
+let _string_ = '"'[_[^'"']]*'"'
 
-let _number_ = ['-']{0-1}['1'-'9']*['0'-'9']{1}['.']*['0'-'9']*
+let _number_ = ['-']{0-1}['1'-'9']*['0'-'9']{1}['\.']*['0'-'9']*
 let _var_ = ['a'-'z' 'A'-'Z' '_']+['a'-'z' 'A'-'Z' '_' '0'-'9']*
 
 (* assignment operators *)
@@ -94,7 +102,7 @@ let _continue_ = 'continue'
 
 let _class_ = 'class'
 
-let _dot_ = '.'
+let _dot_ = '\.'
 
 (* functions *)
 let _def_ = 'def'

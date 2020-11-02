@@ -1,6 +1,7 @@
 (* header *)
 {
   open Printf
+  open Lexing
 
   type token =
   | SQUOTE
@@ -77,7 +78,8 @@ let _tab_ = '\t'
  
 (* comments *)
 let _singlelinecomment_ = "#"(_)*eol
-let _multilinecomment_ = "'''"(_)*"'''"
+let _multilinecomment_ = "'''"
+let _multilineentirecomment_ = "'''"(_)*"'''"
 
 (* optional minus sign + any digit* + 1-9{1} *)
 let _doublequote_ = '\"'
@@ -188,7 +190,7 @@ rules
 
 rule tokens = parse
 | _singlelinecomment_ { token lexbuf }
-| _multilinecomment_ { token lexbuf }
+| _multilinecomment_ { comment lexbuf }
 | [' ' '\t' '\n'] { token lexbuf }
 | _doublequote_ { print_endline "DOUBLE_QUOTE"; DQUOTE }
 | _singlequote_ { print_endline "SINGLE_QUOTE"; SQUOTE }
@@ -252,6 +254,13 @@ rule tokens = parse
 | eof
   { raise End_of_file }
 
+and comment = parse
+| _multilinecomment_ { token lexbuf}
+| _ { comment lexbuf}
+
+and react = parse
+| _reactblock_ { token lexbuf }
+| _ { lexeme lexbuf }
 
 
 (* 

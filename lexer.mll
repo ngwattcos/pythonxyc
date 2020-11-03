@@ -3,7 +3,7 @@
   open Printf
   open Lexing
 
-  type token =
+  let token =
   | SQUOTE
   | DQUOTE
   | BOOL of bool

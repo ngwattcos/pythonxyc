@@ -257,7 +257,11 @@ rule tokens = parse
 | _import_ { IMPORT }
 | _as_ { AS }
 | eof { raise End_of_file }
-| _ as c { printf "Unrecognized character: %c\n" c }
+| _ as c {
+  let pos = lexbuf.Lexing.lex_curr_p in
+  printf "Error @ line %d\n" pos.Lexing.pos_lnum;
+  printf "Unrecognized character: %c\n" c
+  }
 
 and comment = parse
 | _multilinecomment_ { token lexbuf }

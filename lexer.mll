@@ -3,7 +3,7 @@
   open Printf
   open Lexing
 
-  let token =
+  type token =
   | SQUOTE
   | DQUOTE
   | BOOL of bool
@@ -59,6 +59,8 @@
   | EXCEPT
   | RAISE
   | DELETE
+  | IMPORT
+  | AS
 }
 
 (* 
@@ -177,7 +179,8 @@ let _raise_ = "raise"
 
 let _delete_ = "delete"
 
-
+let _import_ = "import"
+let _as_ = "as"
 
 
 (* 
@@ -189,6 +192,8 @@ rules
 
 
 rule tokens = parse
+| ws { token lexbuf }
+| '\n' { Lexing.new_line lexbuf; token lexbuf }
 | _singlelinecomment_ { token lexbuf }
 | _multilinecomment_ { comment lexbuf }
 | [' ' '\t' '\n'] { token lexbuf }
@@ -249,6 +254,8 @@ rule tokens = parse
 | _except_ { print_endline "EXCEPT"; EXCEPT }
 | _raise_ { print_endline "RAISE"; RAISE }
 | _delete_ { print_endline "DELETE"; DELETE }
+| _import_ { print_endline "IMPORT"; IMPORT }
+| _as_ { print_endline "AS"; AS}
 | _ as c
   { printf "Unrecognized character: %c\n" c }
 | eof

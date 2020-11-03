@@ -61,6 +61,8 @@
   | DELETE
   | IMPORT
   | AS
+  | JLET
+  | JCONST
 }
 
 (* 
@@ -184,6 +186,8 @@ let _delete_ = "delete"
 let _import_ = "import"
 let _as_ = "as"
 
+let _jlet_ = "@let"
+let _jconst_ = "@const"
 
 (* 
 
@@ -258,6 +262,8 @@ rule tokens = parse
 | _delete_ { DELETE }
 | _import_ { IMPORT }
 | _as_ { AS }
+| _jconst_ { JCONST }
+| _jlet_ { JLET }
 | eof { raise End_of_file }
 | _ as c {
   let pos = lexbuf.Lexing.lex_curr_p in

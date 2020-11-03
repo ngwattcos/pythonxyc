@@ -12,7 +12,7 @@ open Printf
 %left PLUS MINUS
 %left MULTIPLY DIVIDE
 %left NEG		/* negation -- unary minus */
-%right CARET	/* exponentiation */
+%right EXP	/* exponentiation */
 
 %start input
 %type <unit> input

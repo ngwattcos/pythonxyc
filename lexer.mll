@@ -4,8 +4,11 @@
   open Lexing
 
   type token =
+  | NEWLINE
+  | EXTEND
   | SQUOTE
   | DQUOTE
+  | NONE
   | BOOL of bool
   | STRING of string
   | INT of int
@@ -60,6 +63,7 @@
   | RAISE
   | DELETE
   | IMPORT
+  | FROM
   | AS
   | JLET
   | JCONST
@@ -79,6 +83,8 @@ let _newline_ = '\n'
 let eol = '\n' | '\r''\n'
 let _tab_ = '\t'
 (* let _whitespace_ = '\s' *)
+
+let _extend_ = "..."
  
 (* comments *)
 let _singlelinecomment_ = "#"(_)*eol
@@ -89,6 +95,8 @@ let _multilineentirecomment_ = "'''"(_)*"'''"
 let _doublequote_ = '\"'
 
 let _singlequote_ = '\''
+
+let _none_ = "None"
 
 (* boolean *)
 let _true_ = "True"
@@ -184,6 +192,7 @@ let _raise_ = "raise"
 let _delete_ = "delete"
 
 let _import_ = "import"
+let _from_ = "from"
 let _as_ = "as"
 
 let _jlet_ = "@let"
@@ -199,12 +208,14 @@ rules
 
 rule tokens = parse
 | [' ' '\t'] { token lexbuf }
-| '\n' { Lexing.new_line lexbuf; token lexbuf }
+| eol { Lexing.new_line lexbuf; NEWLINE }
+| _extend_ { EXTEND }
 | _singlelinecomment_ { token lexbuf }
 | _multilinecomment_ { comment lexbuf }
 | [' ' '\t' '\n'] { token lexbuf }
 | _doublequote_ { DQUOTE }
 | _singlequote_ {  SQUOTE }
+| _none_ { NONE }
 | _true_ as b { BOOL b}
 | _false_ as b { BOOL b}
 | _string_ as string { STRING string }
@@ -243,8 +254,8 @@ rule tokens = parse
 | _and_ { AND }
 | _or_ { OR }
 | _not_ { NOT }
-| _in_ { IN}
-| _is_ { IS  }
+| _in_ { IN }
+| _is_ { IS }
 | _if_ { IF}
 | _elif_ { ELIF }
 | _else_ { ELSE }
@@ -261,6 +272,7 @@ rule tokens = parse
 | _raise_ { RAISE }
 | _delete_ { DELETE }
 | _import_ { IMPORT }
+| _from_ { FROM }
 | _as_ { AS }
 | _jconst_ { JCONST }
 | _jlet_ { JLET }

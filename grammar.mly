@@ -15,7 +15,7 @@ $token NONE
 %token <string> STRING
 %token <int> INT
 %token <float> FLOAT
-%token PLUS MINUS EXP DIVIDE MODULO GT GE LT LE DOUBLE_EQUALS
+%token PLUS MINUS EXP DIVIDE MODULO GT GE LT LE DOUBLE_EQUALS NOT_EQUALS
 %token COLON END
 %token IF ELIF ELSE AND OR NOT
 %token PLUS_EQUALS MINUS_EQUALS TIMES_EQUALS DIVIDE_EQUALS MODULO_EQUALS
@@ -48,7 +48,8 @@ bexp: BOOL                                  { $1 }
     | bexp AND bexp                         { Binop(And, $1, $3) }
     | bexp OR bexp                          { Binop(Or, $1, $3) }
     | NOT bexp                              { Not($2) }
-    | exp DOUBLE_EQUALS exp                 { Binop(Equals, $1, $3) }
+    | exp DOUBLE_EQUALS exp                 { Binop(EQ, $1, $3) }
+    | exp NOT_EQUALS exp                    { Binop(NEQ, $1, $3) }
     | exp GT exp                            { Binop(GT, $1, $3) }
     | exp GE exp                            { Binop(GE, $1, $3) }
     | exp LT exp                            { Binop(LT, $1, $3) }

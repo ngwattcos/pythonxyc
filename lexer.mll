@@ -21,6 +21,7 @@
   | DIVIDE_EQUALS
   | MODULO_EQUALS
   | DOUBLE_EQUALS
+  | NOT_EQUALS
   | PLUS
   | MINUS
   | TIMES
@@ -122,6 +123,7 @@ let _moduloequals_ = "%="
 
 (* equality check *)
 let _doubleequals_ = "=="
+let _notequals_ = "!="
 
 (* boolean logic operators *)
 let _and_ = "and"
@@ -229,6 +231,7 @@ rule tokens = parse
 | _divideequals_ { DIVIDE_EQUALS }
 | _moduloequals_ { MODULO_EQUALS }
 | _doubleequals_ { DOUBLE_EQUALS }
+| _notequals_ { NOT_EQUALS }
 | _plus_ { PLUS }
 | _minus_ { MINUS }
 | _times_ { TIMES }

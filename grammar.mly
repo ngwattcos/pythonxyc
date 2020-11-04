@@ -139,6 +139,7 @@ command:
     | JCONST VAR EQUALS exp
 	| var_exp EQUALS exp
 	| var_exp PLUS_EQUALS exp
+	| var_exp MINUS_EQUALS exp
 	| var_exp TIMES_EQUALS exp
 	| var_exp DIVIDE_EQUALS exp
 	| var_exp MODULO_EQUALS exp

@@ -9,7 +9,7 @@
   | SQUOTE
   | DQUOTE
   | NONE
-  | BOOL of bool
+  | BOOL of string
   | STRING of string
   | INT of int
   | FLOAT of float
@@ -42,7 +42,6 @@
   | COMMA
   | COLON
   | END
-  | REACT
   | DOT
   | AND
   | OR
@@ -58,6 +57,7 @@
   | CONTINUE
   | CLASS
   | DEF
+  | RETURN
   | LAMBDA
   | TRY
   | EXCEPT
@@ -68,6 +68,12 @@
   | AS
   | JLET
   | JCONST
+  | REACT
+  | REACT_JSX of string
+  | REACT_CHAR of char
+
+exception UnrecognizedStr of string
+exception UnrecognizedChar
 }
 
 (* 
@@ -208,7 +214,7 @@ rules
 
 
 
-rule tokens = parse
+rule token = parse
 | [' ' '\t'] { token lexbuf }
 | eol { Lexing.new_line lexbuf; NEWLINE }
 | _extend_ { EXTEND }
@@ -221,8 +227,8 @@ rule tokens = parse
 | _true_ as b { BOOL b}
 | _false_ as b { BOOL b}
 | _string_ as string { STRING string }
-| _int_ as int { INT int_of_string(int) }
-| _float_ as float { FLOAT float_of_string(float) }
+| _int_ as int { INT (int_of_string int) }
+| _float_ as float { FLOAT (float_of_string float) }
 | _var_ as var { VAR var}
 | _equals_ { EQUALS }
 | _plusequals_ { PLUS_EQUALS }
@@ -252,7 +258,7 @@ rule tokens = parse
 | _rbrace_ { RBRACE }
 | _colon_ { COLON }
 | _endblock_ { END }
-| _reactblock_ { REACT }
+| _reactblock_ { react lexbuf }
 | _dot_ { DOT }
 | _and_ { AND }
 | _or_ { OR }
@@ -283,7 +289,8 @@ rule tokens = parse
 | _ as c {
   let pos = lexbuf.Lexing.lex_curr_p in
   printf "Error @ line %d\n" pos.Lexing.pos_lnum;
-  printf "Unrecognized character: %c\n" c
+  printf "Unrecognized character: %c\n" c;
+  raise UnrecognizedChar
   }
 
 and comment = parse
@@ -292,7 +299,7 @@ and comment = parse
 
 and react = parse
 | _reactblock_ { token lexbuf }
-| _ { lexeme lexbuf }
+| _ as jsx { REACT_CHAR (jsx) }
 
 
 (* 
@@ -302,9 +309,7 @@ trailer
  *)
 
  {
-  let rec parse lexbuf =
-  let token = toy_lang lexbuf in
-  parse lexbuf
+  let rec parse lexbuf = parse lexbuf
 
   let main () =
     let cin =

@@ -11,6 +11,10 @@ while (i < len(lst)):
     i += 1
     if i == len(lst) - 2:
         break
+    elif:
+        i = i
+    else:
+        i = i
     @end
     continue
 @end

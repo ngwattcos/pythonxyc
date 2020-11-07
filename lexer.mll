@@ -175,7 +175,7 @@ let _reactblock_ = "@react"
 (* control flow *)
 let _if_ = "if"
 let _elif_ = "elif"
-let _else_ = "if"
+let _else_ = "else"
 
 let _while_ = "while"
 let _for_ = "for"

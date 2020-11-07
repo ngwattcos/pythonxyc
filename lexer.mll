@@ -1,6 +1,7 @@
 (* header *)
 {
   open Printf
+  open Char
   open Lexing
 
   type token =
@@ -74,6 +75,7 @@
 
 exception UnrecognizedStr of string
 exception UnrecognizedChar
+exception Eof
 }
 
 (* 
@@ -87,14 +89,15 @@ Definitions
 (* whitespace *)
 (* let _crlf_ = '\\r\\n' *)
 let _newline_ = '\n'
-let eol = '\n' | '\r''\n'
+let _eol_ = '\n' | '\r''\n'
 let _tab_ = '\t'
 (* let _whitespace_ = '\s' *)
 
 let _extend_ = "..."
  
 (* comments *)
-let _singlelinecomment_ = "#"(_)*eol
+let _singlelinecomment_ = "#"
+let _singlelinecommententire_ = "#"(_)*_eol_
 let _multilinecomment_ = "'''"
 let _multilineentirecomment_ = "'''"(_)*"'''"
 
@@ -111,11 +114,11 @@ let _false_ = "False"
 
 let _string_ = '\"'(_[^'\"'])*'\"'
 
-(* let _number_ = "-"{0-1}['1'-'9']*['0'-'9']{1}['\.']*['0'-'9']* *)
-(* let _int_ = "-"?['1'-'9']*['0'-'9'] *)
-(* let _float_ = "-"?['1'-'9']*['0'-'9']"."['0'-'9']* *)
-let _int_ = ['1'-'9']*['0'-'9']
-let _float_ = ['1'-'9']*['0'-'9']"."['0'-'9']*
+let _digit_ = ['0'-'9']
+(* let _int_ = ['1'-'9']*['0'-'9'] *)
+(* let _float_ = ['1'-'9']*['0'-'9']"."['0'-'9']+ *)
+let _int_ = _digit_+
+let _float_ = _digit_+"."_digit_+
 let _var_ = ['a'-'z' 'A'-'Z' '_']+['a'-'z' 'A'-'Z' '_' '0'-'9']*
 
 (* assignment operators *)
@@ -162,7 +165,7 @@ let _rbracket_ = "]"
 let _comma_ = ","
 
 let _lbrace_ = "{"
-let _rbrace_ = "{"
+let _rbrace_ = "}"
 
 (* block begin and end *)
 let _colon_ = ":"
@@ -212,79 +215,77 @@ rules
 
  *)
 
-
-
 rule token = parse
 | [' ' '\t'] { token lexbuf }
-| eol { Lexing.new_line lexbuf; NEWLINE }
-| _extend_ { EXTEND }
-| _singlelinecomment_ { token lexbuf }
-| _multilinecomment_ { comment lexbuf }
-| [' ' '\t' '\n'] { token lexbuf }
-| _doublequote_ { DQUOTE }
-| _singlequote_ {  SQUOTE }
-| _none_ { NONE }
-| _true_ as b { BOOL b}
-| _false_ as b { BOOL b}
-| _string_ as string { STRING string }
-| _int_ as int { INT (int_of_string int) }
-| _float_ as float { FLOAT (float_of_string float) }
-| _var_ as var { VAR var}
-| _equals_ { EQUALS }
-| _plusequals_ { PLUS_EQUALS }
-| _minusequals_ { MINUS_EQUALS }
-| _timesequals_ { TIMES_EQUALS }
-| _divideequals_ { DIVIDE_EQUALS }
-| _moduloequals_ { MODULO_EQUALS }
-| _doubleequals_ { DOUBLE_EQUALS }
-| _notequals_ { NOT_EQUALS }
-| _plus_ { PLUS }
-| _minus_ { MINUS }
-| _times_ { TIMES }
-| _exp_ { EXP }
-| _divide_ { DIVIDE }
-| _floordivide_ { FLOOR_DIVIDE }
-| _modulo_ { MODULO }
-| _gt_ { GT }
-| _ge_ { GE }
-| _lt_ { LT }
-| _le_ { LE }
-| _lparen_ { LPAREN }
-| _rparen_ { RPAREN }
-| _lbracket_ { LBRACKET }
-| _rbracket_ { RBRACKET }
-| _comma_ { COMMA }
-| _lbrace_ { LBRACE }
-| _rbrace_ { RBRACE }
-| _colon_ { COLON }
-| _endblock_ { END }
-| _reactblock_ { react lexbuf }
-| _dot_ { DOT }
-| _and_ { AND }
-| _or_ { OR }
-| _not_ { NOT }
-| _in_ { IN }
-| _is_ { IS }
-| _if_ { IF}
-| _elif_ { ELIF }
-| _else_ { ELSE }
-| _while_ { WHILE }
-| _for_ { FOR }
-| _break_ { BREAK }
-| _continue_ { CONTINUE }
-| _class_ { CLASS }
-| _def_ { DEF }
-| _lambda_ { LAMBDA }
-| _return_ { RETURN }
-| _try_ { TRY }
-| _except_ { EXCEPT }
-| _raise_ { RAISE }
-| _delete_ { DELETE }
-| _import_ { IMPORT }
-| _from_ { FROM }
-| _as_ { AS }
-| _jconst_ { JCONST }
-| _jlet_ { JLET }
+| _eol_ { printf " (\\n)\n"; Lexing.new_line lexbuf; NEWLINE }
+| _extend_ { printf "extend"; EXTEND }
+| _singlelinecomment_ { printf "#"; single_comment lexbuf }
+| _multilinecomment_ { printf "'''---"; multi_comment lexbuf }
+| [' ' '\t' '\n'] { print_endline "[ws]"; token lexbuf }
+| _doublequote_ { printf "\""; DQUOTE; parse_double_quote lexbuf }
+| _singlequote_ { printf "'"; SQUOTE; parse_single_quote lexbuf }
+| _none_ { printf "NONE "; NONE }
+| _true_ as b { printf "TRUE "; BOOL b}
+| _false_ as b { printf "FALSE "; BOOL b}
+| _string_ as str {printf "\"%s\" " str;  STRING str }
+| _int_ as n { printf "int(%s) " n; INT (int_of_string n) }
+| _float_ as n { printf "float(%s) " n; FLOAT (float_of_string n) }
+| _equals_ { printf "(=) "; EQUALS }
+| _plusequals_ { printf "(+=) "; PLUS_EQUALS }
+| _minusequals_ { printf "(-=) "; MINUS_EQUALS }
+| _timesequals_ { printf "(*=) "; TIMES_EQUALS }
+| _divideequals_ { printf "(/=) "; DIVIDE_EQUALS }
+| _moduloequals_ { printf "(MOD=) "; MODULO_EQUALS }
+| _doubleequals_ { printf "(==) "; DOUBLE_EQUALS }
+| _notequals_ { printf "(!=) "; NOT_EQUALS }
+| _plus_ { printf "(+) "; PLUS }
+| _minus_ { printf "(-) "; MINUS }
+| _times_ { printf "(*) "; TIMES }
+| _exp_ { printf "(**) "; EXP }
+| _divide_ { printf "(/) "; DIVIDE }
+| _floordivide_ { printf "(//) "; FLOOR_DIVIDE }
+| _modulo_ { printf "(MOD) "; MODULO }
+| _gt_ { printf "> "; GT }
+| _ge_ { printf ">= "; GE }
+| _lt_ { printf "< "; LT }
+| _le_ { printf "<= "; LE }
+| _lparen_ { printf "·(·"; LPAREN }
+| _rparen_ { printf "·)·"; RPAREN }
+| _lbracket_ { printf "·[·"; LBRACKET }
+| _rbracket_ { printf "·]·"; RBRACKET }
+| _comma_ { printf ", "; COMMA }
+| _lbrace_ { printf "·{·"; LBRACE }
+| _rbrace_ { printf "·}·"; RBRACE }
+| _colon_ { printf ":: "; COLON }
+| _endblock_ { printf "END "; END }
+| _reactblock_ { printf "REACTBEGIN "; react lexbuf }
+| _dot_ { printf "(dot)"; DOT }
+| _and_ { printf "(&&) "; AND }
+| _or_ { printf "(||) "; OR }
+| _not_ { printf "!"; NOT }
+| _in_ { printf "IN "; IN }
+| _is_ { printf "IS "; IS }
+| _if_ { printf "IF "; IF }
+| _elif_ { printf "ELIF "; ELIF }
+| _else_ { printf "ELSE "; ELSE }
+| _while_ { printf "WHILE "; WHILE }
+| _for_ { printf "FOR "; FOR }
+| _break_ { printf "BREAK "; BREAK }
+| _continue_ { printf "CONTINUE "; CONTINUE }
+| _class_ { printf "CLASS "; CLASS }
+| _def_ { printf "DEF "; DEF }
+| _lambda_ { printf "LAMBDA "; LAMBDA }
+| _return_ { printf "RETURN "; RETURN }
+| _try_ { printf "TRY "; TRY }
+| _except_ {printf "EXCEPT ";  EXCEPT }
+| _raise_ { printf "RAISE "; RAISE }
+| _delete_ { printf "DELETE "; DELETE }
+| _import_ { printf "IMPORT "; IMPORT }
+| _from_ { printf "FROM "; FROM }
+| _as_ { printf "AS "; AS }
+| _jconst_ { printf "CONST "; JCONST }
+| _jlet_ { printf "LET "; JLET }
+| _var_ as var { printf "var(%s) " var; VAR var}
 | eof { raise End_of_file }
 | _ as c {
   let pos = lexbuf.Lexing.lex_curr_p in
@@ -293,13 +294,25 @@ rule token = parse
   raise UnrecognizedChar
   }
 
-and comment = parse
-| _multilinecomment_ { token lexbuf }
-| _ { comment lexbuf }
+and parse_single_quote = parse
+| _singlequote_ { printf "' "; SQUOTE; token lexbuf }
+| _ as c { printf "%c" c; parse_single_quote lexbuf }
+
+and parse_double_quote = parse
+| _doublequote_ { printf "\" "; DQUOTE; token lexbuf }
+| _ as c { printf "%c" c; parse_double_quote lexbuf }
+
+and single_comment = parse
+| _eol_ { print_endline " ##"; token lexbuf }
+| _ as c { printf "%c" c; single_comment lexbuf }
+
+and multi_comment = parse
+| _multilinecomment_ { print_endline "---'''"; token lexbuf }
+| _ { multi_comment lexbuf }
 
 and react = parse
-| _reactblock_ { token lexbuf }
-| _ as jsx { REACT_CHAR (jsx) }
+| _reactblock_ { printf "REACTEND "; token lexbuf }
+| _ as jsx { printf "%c " jsx; REACT_CHAR (jsx) }
 
 
 (* 
@@ -309,17 +322,18 @@ trailer
  *)
 
  {
-  let rec parse lexbuf = parse lexbuf
+  (* let rec parse lexbuf = parse lexbuf *)
 
-  let main () =
-    let cin =
-      if Array.length Sys.argv > 1
-      then open_in Sys.argv.(1)
-      else stdin
-    in
-    let lexbuf = Lexing.from_channel cin in
-    try parse lexbuf
-    with End_of_file -> ()
+  let main () = begin
+    try
+      let filename = Sys.argv.(1) in
+      let file_handle = open_in filename in
+      let lexbuf = Lexing.from_channel file_handle in
 
-  let _ = Printexc.print main ()
+      while true do
+        let result = token lexbuf in ()
+      done
+    with Eof -> exit 0
+  end;;
+  main () ;;
  }

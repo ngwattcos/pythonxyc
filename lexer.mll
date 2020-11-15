@@ -314,8 +314,8 @@ and multi_comment = parse
 | _ { multi_comment lexbuf }
 
 and react = parse
-| _reactblock_ { printf "REACTEND "; token lexbuf }
-| _ as jsx { printf "%c " jsx; REACT_CHAR (jsx) }
+| _reactblock_ { printf "\nREACTEND "; token lexbuf }
+| _ as jsx { printf "%c" jsx; REACT_CHAR (jsx); react lexbuf }
 
 
 (* 

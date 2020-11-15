@@ -24,6 +24,7 @@ $token NONE
 %token DEF CLASS LAMBDA RETURN
 %token DOT IS DELETE
 %token TRY EXCEPT RAISE
+%token <char> REACT_CHAR
 %token EOF
 
 /* Q: How to define tokens representing text inside react blocks? */

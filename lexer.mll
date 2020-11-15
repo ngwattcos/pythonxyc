@@ -305,7 +305,8 @@ and parse_double_quote = parse
 | _ as c { printf "%c" c; parse_double_quote lexbuf }
 
 and single_comment = parse
-| _eol_ { print_endline " #"; token lexbuf }
+| _eol_ { print_endline " ##"; token lexbuf }
+| eof  { raise End_of_file }
 | _ as c { printf "%c" c; single_comment lexbuf }
 
 and multi_comment = parse

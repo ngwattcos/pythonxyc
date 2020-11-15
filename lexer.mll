@@ -94,6 +94,8 @@ let _tab_ = '\t'
 (* let _whitespace_ = '\s' *)
 
 let _extend_ = "..."
+
+let _expand_ = _extend_ _eol_+
  
 (* comments *)
 let _singlelinecomment_ = "#"
@@ -217,16 +219,16 @@ rules
 
 rule token = parse
 | [' ' '\t'] { token lexbuf }
-| _eol_ { printf " (\\n)\n"; Lexing.new_line lexbuf; NEWLINE }
-| _extend_ { printf "extend"; EXTEND }
+| _extend_ (_eol_ | [' ' '\t'])* { printf "(...)"; token lexbuf }
+| _eol_+ { printf " (\\n)\n"; Lexing.new_line lexbuf; NEWLINE }
 | _singlelinecomment_ { printf "#"; single_comment lexbuf }
 | _multilinecomment_ { printf "'''---"; multi_comment lexbuf }
 | [' ' '\t' '\n'] { print_endline "[ws]"; token lexbuf }
 | _doublequote_ { printf "\""; DQUOTE; parse_double_quote lexbuf }
 | _singlequote_ { printf "'"; SQUOTE; parse_single_quote lexbuf }
 | _none_ { printf "NONE "; NONE }
-| _true_ as b { printf "TRUE "; BOOL b}
-| _false_ as b { printf "FALSE "; BOOL b}
+| _true_ as b { printf "(TRUE) "; BOOL b}
+| _false_ as b { printf "(FALSE) "; BOOL b}
 | _string_ as str {printf "\"%s\" " str;  STRING str }
 | _int_ as n { printf "int(%s) " n; INT (int_of_string n) }
 | _float_ as n { printf "float(%s) " n; FLOAT (float_of_string n) }

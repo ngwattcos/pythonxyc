@@ -52,18 +52,22 @@ and com =
 | While of exp * (com list)
 | If of if_com
 | For of for_com
+| Exp of exp
+| Empty
 
 and if_com =
-| IfBase of exp * (com list)            (* If-then *)
-| IfElif of if_com * (com list)         (* If-elif-elif...elif *)
-| IfElse of if_com * (com list)         (* If-elif-elif...else *)
+| IfBase of bexp * (com list) * (elif_com list)                       (* If-then *)
+| IfElse of bexp * (com list) * (elif_com list) * (com list)          (* If-elif-elif...else *)
+
+and elif_com =
+| Elif of bexp * (com list)
 
 (* for i in range(...) *)
 (* for i in items *)
 (* for i in [0, 1, 2, 3] *)
 and for_com =
-| ForRange of var * (var * (exp list))
-| ForIterVar of var * var
+| ForRange of var * (var * (exp list)) * (com list)
+| ForIterVar of var * var * (com list)
 (* | ForIter of var * (exp list) *)
 
 and val_update =

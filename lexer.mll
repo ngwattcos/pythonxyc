@@ -10,7 +10,7 @@
   | SQUOTE
   | DQUOTE
   | NONE
-  | BOOL of string
+  | BOOL of bool
   | STRING of string
   | INT of int
   | FLOAT of float
@@ -228,8 +228,8 @@ rule token = parse
 | _doublequote_ { printf "\""; DQUOTE; parse_double_quote lexbuf }
 | _singlequote_ { printf "'"; SQUOTE; parse_single_quote lexbuf }
 | _none_ { printf "NONE "; NONE }
-| _true_ as b { printf "(TRUE) "; BOOL b}
-| _false_ as b { printf "(FALSE) "; BOOL b}
+| _true_ as b { printf "(TRUE) "; BOOL(true) }
+| _false_ as b { printf "(FALSE) "; BOOL(false) }
 | _string_ as str {printf "\"%s\" " str;  STRING str }
 | _int_ as n { printf "int(%s) " n; INT (int_of_string n) }
 | _float_ as n { printf "float(%s) " n; FLOAT (float_of_string n) }

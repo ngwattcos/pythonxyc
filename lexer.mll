@@ -72,6 +72,7 @@
   | REACT
   | REACT_JSX of string
   | REACT_CHAR of char
+  | EOF
 
 exception UnrecognizedStr of string
 exception UnrecognizedChar
@@ -288,7 +289,7 @@ rule token = parse
 | _jconst_ { printf "CONST "; JCONST }
 | _jlet_ { printf "LET "; JLET }
 | _var_ as var { printf "var(%s) " var; VAR var}
-| eof { raise End_of_file }
+| eof { EOF; print_endline "\nEOF"; raise End_of_file }
 | _ as c {
   let pos = lexbuf.Lexing.lex_curr_p in
   printf "Error @ line %d\n" pos.Lexing.pos_lnum;

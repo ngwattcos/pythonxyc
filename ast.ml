@@ -4,6 +4,7 @@ type binop =
 | Times
 | Divide
 | Modulo
+| Expon
 
 and boolop =
 | And

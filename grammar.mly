@@ -46,11 +46,27 @@ program: command_seq EOF                    { $1 }
 ;
 
 bexp:
-    | exp AND exp                                           { BoolOp($1, And, $3) }
-    | exp OR exp                                            { BoolOp($1, Or, $3) }
-    | NOT bexp                                              { Not($2) }
-    | exp DOUBLE_EQUALS exp                                 { BoolOp($1, EQ, $3) }
-    | exp NOT_EQUALS exp                                    { BoolOp($1, NE, $3) }
+    | bool_primitive AND bool_primitive                     { BoolOp($1, And, $3) }
+    | bool_primitive OR bool_primitive                      { BoolOp($1, Or, $3) }
+    | NOT bool_primitive                                    { Not($2) }
+    | comparable DOUBLE_EQUALS comparable                   { BoolOp($1, EQ, $3) }
+    | comparable NOT_EQUALS comparable                      { BoolOp($1, NE, $3) }
+;
+
+bool_primitive:
+    | BOOL                                                  { Boolean $1 }
+    | var_exp                                               { $1 }
+    | function_call                                         { $1 }
+;
+
+comparable:
+    | bexp                                                  { $1 }
+    | string                                                { $1 }
+    | num                                                   { $1 }
+    | var_exp                                               { $1 }
+    | function_call                                         { $1 }
+    | list                                                  { $1 }
+;
 
 boolop:
     | numeric GT numeric                                    { BoolOp($1, GT, $3) }
@@ -59,9 +75,12 @@ boolop:
     | numeric LE numeric                                    { BoolOp($1, LE, $3) }
 ;
 
-
 num: INT                                                    { Int($1) }
     | FLOAT                                                 { Float($1) }
+;
+
+string:
+    | STRING                                                { String($1) }
 ;
 
 var_exp: VAR                                { Var($1) }
@@ -86,7 +105,6 @@ list: LBRACKET RBRACKET                                     { List([]) }
     | LBRACKET list_items RBRACKET                          { List($2) }
 ;
 
-
 binop:
 	| numeric PLUS numeric                                  { Binop($1, Plus, $3) }
 	| numeric MINUS numeric                                 { Binop($1, Minus, $3) }
@@ -107,12 +125,10 @@ exp: NONE                                                   { None }
     | num                                                   { $1 }
 	| MINUS numeric %prec NEG                               { Neg($2) }
     | binop                                                 { $1 }
-    | BOOL                                                  { Boolean $1 }
     | bexp                                                  { $1 }
     | boolop                                                { $1 }
     | dict                                                  { $1 }
     | list                                                  { $1 }
-    | STRING                                                { String($1) }
     | var_exp                                               { VarAccess($1) }
     | LAMBDA function_parameters COLON exp                  { Lambda(Params($2), $4) }
     | function_call                                         { $1 }

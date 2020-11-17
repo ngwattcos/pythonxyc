@@ -6,8 +6,6 @@ open Ast
 
 
 /* Ocamlyacc Declarations */
-%token NEWLINE
-%token LPAREN RPAREN LBRACE RBRACE LBRACKET RBRACKET
 %token IMPORT FROM AS
 %token JLET JCONST EQUALS
 %token NONE
@@ -17,20 +15,22 @@ open Ast
 %token <string> STRING
 %token <int> INT
 %token <float> FLOAT
-%right EXP
-%left PLUS MINUS TIMES DIVIDE MODULO
+%right PLUS_EQUALS MINUS_EQUALS TIMES_EQUALS DIVIDE_EQUALS MODULO_EQUALS
+%left AND OR
 %nonassoc GT GE LT LE DOUBLE_EQUALS NOT_EQUALS
+%left PLUS MINUS TIMES DIVIDE MODULO
+%right EXP
 %token COLON END
 %token IF ELIF ELSE
-%left AND OR
 %left NOT
-%right PLUS_EQUALS MINUS_EQUALS TIMES_EQUALS DIVIDE_EQUALS MODULO_EQUALS
 %token <bool> BOOL
 %token WHILE FOR IN BREAK CONTINUE
 %token DEF CLASS LAMBDA RETURN
 %left DOT IS DELETE
 %token TRY EXCEPT RAISE
 %token <char> REACT_CHAR
+%token NEWLINE
+%token LPAREN RPAREN LBRACE RBRACE LBRACKET RBRACKET
 %token EOF
 
 %left NEG		/* negation -- unary minus */
@@ -108,7 +108,7 @@ exp: NONE                                                   { None }
 	| MINUS numeric %prec NEG                               { Neg($2) }
     | binop                                                 { $1 }
     | BOOL                                                  { Boolean $1 }
- /*   | bexp                                                  { $1 }*/
+    | bexp                                                  { $1 }
     | boolop                                                { $1 }
     | dict                                                  { $1 }
     | list                                                  { $1 }

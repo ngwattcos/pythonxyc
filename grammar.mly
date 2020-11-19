@@ -65,9 +65,11 @@ comparable:
     | num                                                   { $1 }
     | var_exp                                               { $1 }
     | function_call                                         { $1 }
-    | list                                                  { $1 }
     | binop                                                 { $1 }
     | paren_exp                                             { $1 }
+    | boolop                                                { $1 }
+    | dict                                                  { $1 }
+    | list                                                  { $1 }
 ;
 
 boolop:

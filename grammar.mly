@@ -7,7 +7,7 @@ open Ast
 
 /* Ocamlyacc Declarations */
 %token IMPORT FROM AS
-%token JLET JCONST EQUALS
+%token JLET JCONST
 %token NONE
 %token <string> VAR
 %token COMMA
@@ -15,7 +15,7 @@ open Ast
 %token <string> STRING
 %token <int> INT
 %token <float> FLOAT
-%right PLUS_EQUALS MINUS_EQUALS TIMES_EQUALS DIVIDE_EQUALS MODULO_EQUALS
+%right PLUS_EQUALS MINUS_EQUALS TIMES_EQUALS DIVIDE_EQUALS MODULO_EQUALS EQUALS
 %left AND OR
 %nonassoc GT GE LT LE DOUBLE_EQUALS NOT_EQUALS
 %left PLUS MINUS TIMES DIVIDE MODULO
@@ -57,6 +57,7 @@ bool_primitive:
     | BOOL                                                  { Boolean $1 }
     | var_exp                                               { $1 }
     | function_call                                         { $1 }
+    | paren_exp                                             { $1 }
 ;
 
 comparable:

@@ -66,6 +66,8 @@ comparable:
     | var_exp                                               { $1 }
     | function_call                                         { $1 }
     | list                                                  { $1 }
+    | binop                                                 { $1 }
+    | paren_exp                                             { $1 }
 ;
 
 boolop:
@@ -121,6 +123,9 @@ numeric: num                                                { $1 }
     | binop                                                 { $1 }
 ;
 
+paren_exp:
+	| LPAREN exp RPAREN                                     { Paren($2) }
+
 exp: NONE                                                   { None }
     | num                                                   { $1 }
 	| MINUS numeric %prec NEG                               { Neg($2) }
@@ -132,7 +137,7 @@ exp: NONE                                                   { None }
     | var_exp                                               { VarAccess($1) }
     | LAMBDA function_parameters COLON exp                  { Lambda(Params($2), $4) }
     | function_call                                         { $1 }
-	| LPAREN exp RPAREN                                     { Paren($2) }
+    | paren_exp                                             { $1 }
 ;
 
 val_update:

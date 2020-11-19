@@ -36,6 +36,12 @@ open Ast
 %left NEG		/* negation -- unary minus */
 
 
+%type <Ast.aexp> aexp
+%type <Ast.bexp> bexp
+
+/*%type <Ast.com> c
+%type <Ast.com> p*/
+
 %type <Ast.program> program
 %start program
 
@@ -45,54 +51,10 @@ open Ast
 program: command_seq EOF                    { $1 }
 ;
 
-bexp:
-    | bool_primitive AND bool_primitive                     { BoolOp($1, And, $3) }
-    | bool_primitive OR bool_primitive                      { BoolOp($1, Or, $3) }
-    | NOT bool_primitive                                    { Not($2) }
-    | comparable DOUBLE_EQUALS comparable                   { BoolOp($1, EQ, $3) }
-    | comparable NOT_EQUALS comparable                      { BoolOp($1, NE, $3) }
+var_access: VAR                                                { Var($1) }
+    | var_access DOT VAR                                       { Dot($1, $3) }
+    | var_access LBRACKET exp RBRACKET                         { Key($1, $3) }
 ;
-
-bool_primitive:
-    | BOOL                                                  { Boolean $1 }
-    | var_exp                                               { $1 }
-    | function_call                                         { $1 }
-    | paren_exp                                             { $1 }
-;
-
-comparable:
-    | bexp                                                  { $1 }
-    | string                                                { $1 }
-    | num                                                   { $1 }
-    | var_exp                                               { $1 }
-    | function_call                                         { $1 }
-    | binop                                                 { $1 }
-    | paren_exp                                             { $1 }
-    | boolop                                                { $1 }
-    | dict                                                  { $1 }
-    | list                                                  { $1 }
-;
-
-boolop:
-    | numeric GT numeric                                    { BoolOp($1, GT, $3) }
-    | numeric GE numeric                                    { BoolOp($1, GE, $3) }
-    | numeric LT numeric                                    { BoolOp($1, LT, $3) }
-    | numeric LE numeric                                    { BoolOp($1, LE, $3) }
-;
-
-num: INT                                                    { Int($1) }
-    | FLOAT                                                 { Float($1) }
-;
-
-string:
-    | STRING                                                { String($1) }
-;
-
-var_exp: VAR                                { Var($1) }
-    | var_exp DOT VAR                       { Dot($1, $3) }
-    | var_exp LBRACKET exp RBRACKET         { Key($1, $3) }
-;
-
 
 dict_entries: exp COLON exp                               { [($1, $3)] }
     | dict_entries COMMA exp COLON exp                    { ($3, $5)::$1 }
@@ -110,47 +72,96 @@ list: LBRACKET RBRACKET                                     { List([]) }
     | LBRACKET list_items RBRACKET                          { List($2) }
 ;
 
-binop:
-	| numeric PLUS numeric                                  { Binop($1, Plus, $3) }
-	| numeric MINUS numeric                                 { Binop($1, Minus, $3) }
-	| numeric TIMES numeric                                 { Binop($1, Times, $3) }
-	| numeric DIVIDE numeric                                { Binop($1, Divide, $3) }
-	| numeric MODULO numeric                                { Binop($1, Modulo, $3) }
-	| numeric EXP numeric                                   { Binop($1, Expon, $3) }
+modulo_exp:
+    | modulo_exp MODULO add_exp                             { Mod($1, $3) }
 ;
 
-numeric: num                                                { $1 }
-    | var_exp                                               { $1 }
-    | function_call                                         { $1 }
-	| MINUS numeric %prec NEG                               { Neg($2) }
-    | binop                                                 { $1 }
+add_exp:
+    | add_exp PLUS times_exp                                { Plus($1, $3) }
+    | add_exp MINUS times_exp                               { Minus($1, $3) }
+    | times_exp                                             { $1 }
+;
+
+times_exp:
+    | times_exp TIMES neg_exp                               { Times($1, $3) }
+    | times_exp DIVIDE neg_exp                              { Div($1, $3) }
+    | exponen_exp                                           { $1 }
+;
+
+neg_exp:
+	| MINUS exponen_exp %prec NEG                           { Neg($2) }
+;
+
+exponen_exp:
+    | exponen_exp EXP aexp_primitive                        { Expon($1, $3) }
+;
+
+aexp_primitive:
+    | INT                                                   { Int($1) }
+    | FLOAT                                                 { Float($1) }
+    | var_access                                            { IntVarAccess($1) }
+    | function_call_val                                     { IntFuncCallVal($1) }
+    | paren_exp                                             { IntParen($1) }
+
+aexp:
+    | modulo_exp                                            { $1 }
+;
+
+bexp:
+    | aexp GE aexp                                          { GE($1, $3) }
+    | aexp GT aexp                                          { GT($1, $3) }
+    | aexp LE aexp                                          { LE($1, $3) }
+    | aexp LT aexp                                          { LT($1, $3) }
+    | or_exp                                                { $1 }
+;
+
+or_exp:
+    | or_exp OR and_exp                                     { Or($1, $3) }
+    | and_exp                                               { $1 }
+;
+
+and_exp:
+    | and_exp AND not_exp                                   { And($1, $3) }
+    | not_exp                                               { $1 }
+;
+
+not_exp:
+    | NOT bool_primitive                                    { Not($2) }
+    | bool_primitive                                        { $1 }
+;
+
+bool_primitive:
+    | BOOL                                                  { Bool($1) }
+    | var_access                                            { BoolVarAccess($1) }
+    | function_call_val                                     { BoolFuncCallVal($1) }
 ;
 
 paren_exp:
 	| LPAREN exp RPAREN                                     { Paren($2) }
+;
 
-exp: NONE                                                   { None }
-    | num                                                   { $1 }
-	| MINUS numeric %prec NEG                               { Neg($2) }
-    | binop                                                 { $1 }
-    | bexp                                                  { $1 }
-    | boolop                                                { $1 }
+exp:
+    | NONE                                                  { None }
+    | STRING                                                { String($1) }
+    | var_access                                            { VarAccess($1) }
     | dict                                                  { $1 }
     | list                                                  { $1 }
-    | var_exp                                               { VarAccess($1) }
+    | aexp                                                  { Aexp($1) }
+    | bexp                                                  { Bexp($1) }
     | LAMBDA function_parameters COLON exp                  { Lambda(Params($2), $4) }
-    | function_call                                         { $1 }
+    | function_call_val                                     { FuncCallVal($1) }
     | paren_exp                                             { $1 }
 ;
 
 val_update:
     | JLET VAR EQUALS exp                                   { JLet($2, $4) }
     | JCONST VAR EQUALS exp                                 { JConst($2, $4) }
-	| var_exp PLUS_EQUALS exp                               { BinopCom($1, PlusEquals, $3) }
-	| var_exp MINUS_EQUALS exp                              { BinopCom($1, MinusEquals, $3) }
-	| var_exp TIMES_EQUALS exp                              { BinopCom($1, TimesEquals, $3) }
-	| var_exp DIVIDE_EQUALS exp                             { BinopCom($1, DivideEquals, $3) }
-	| var_exp MODULO_EQUALS exp                             { BinopCom($1, ModuloEquals, $3) }
+	| var_access EQUALS exp                                 { Update($1, Equals, $3) }
+	| var_access PLUS_EQUALS exp                            { Update($1, PlusEquals, $3) }
+	| var_access MINUS_EQUALS exp                           { Update($1, MinusEquals, $3) }
+	| var_access TIMES_EQUALS exp                           { Update($1, TimesEquals, $3) }
+	| var_access DIVIDE_EQUALS exp                          { Update($1, DivideEquals, $3) }
+	| var_access MODULO_EQUALS exp                          { Update($1, ModuloEquals, $3) }
 ;
 
 import: IMPORT VAR FROM STRING                              { ImportBase($2, $4) }
@@ -168,8 +179,12 @@ function_arguments: exp                                     { [$1] }
     | function_arguments COMMA exp                          { $3::$1 }
 ;
 
-function_call: var_exp LPAREN RPAREN                        { FuncCallVal($1, Args([])) }
-    | var_exp LPAREN function_arguments RPAREN              { FuncCallVal($1, Args($3)) }
+function_call_val: var_access LPAREN RPAREN                 { Call($1, Args([])) }
+    | var_access LPAREN function_arguments RPAREN           { Call($1, Args($3)) }
+;
+
+function_call_com: var_access LPAREN RPAREN                 { Call($1, Args([])) }
+    | var_access LPAREN function_arguments RPAREN           { Call($1, Args($3)) }
 ;
 
 for_com: FOR VAR IN
@@ -192,7 +207,7 @@ command:
     | while_com                                             { $1 }
     | for_com                                               { For($1) }
     | if_com                                                { If($1) }
-    | function_call                                         { $1 }
+    | function_call_com                                     { FuncCallCom($1) }
     | DEF VAR LPAREN function_parameters RPAREN COLON
         command_seq END                                     { FuncDef($2, Params($4), $7) }
     | RETURN exp                                            { ReturnExp($2) }

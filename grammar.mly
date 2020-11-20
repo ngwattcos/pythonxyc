@@ -72,9 +72,14 @@ list: LBRACKET RBRACKET                                     { List([]) }
     | LBRACKET list_items RBRACKET                          { List($2) }
 ;
 
+aexp:
+    | modulo_exp                                            { $1 }
+;
+
 modulo_exp:
     | modulo_exp MODULO add_exp                             { Mod($1, $3) }
 ;
+
 
 add_exp:
     | add_exp PLUS times_exp                                { Plus($1, $3) }
@@ -101,12 +106,10 @@ aexp_primitive:
     | FLOAT                                                 { Float($1) }
     | var_access                                            { IntVarAccess($1) }
     | function_call_val                                     { IntFuncCallVal($1) }
-    | paren_exp                                             { IntParen($1) }
-
-aexp:
-    | modulo_exp                                            { $1 }
+    | LPAREN aexp RPAREN                                    { IntParen($2) }
 ;
 
+/* Boolean expressions */
 bexp:
     | aexp GE aexp                                          { GE($1, $3) }
     | aexp GT aexp                                          { GT($1, $3) }
@@ -126,14 +129,16 @@ and_exp:
 ;
 
 not_exp:
-    | NOT bool_primitive                                    { Not($2) }
-    | bool_primitive                                        { $1 }
+    | NOT bexp_primitive                                    { Not($2) }
+    | bexp_primitive                                        { $1 }
 ;
 
-bool_primitive:
+
+bexp_primitive:
     | BOOL                                                  { Bool($1) }
     | var_access                                            { BoolVarAccess($1) }
     | function_call_val                                     { BoolFuncCallVal($1) }
+    | LPAREN bexp RPAREN                                    { BoolParen($2) }
 ;
 
 paren_exp:
@@ -218,5 +223,5 @@ command:
 ;
 
 command_seq:
-    | command                                               { [$1] }
     | command_seq NEWLINE command                           { $3::$1 }
+    | command                                               { [$1] }

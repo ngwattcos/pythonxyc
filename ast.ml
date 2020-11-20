@@ -3,20 +3,21 @@ type aexp =
 | Float of float
 | IntVarAccess of var_access
 | IntFuncCallVal of func_call
-| IntParen of exp
-| Mod of aexp * aexp
-| Plus of aexp * aexp
-| Minus of aexp * aexp
-| Times of aexp * aexp
-| Div of aexp * aexp
+| IntParen of aexp
 | Expon of aexp * aexp
 | Neg of aexp
+| Times of aexp * aexp
+| Div of aexp * aexp
+| Plus of aexp * aexp
+| Minus of aexp * aexp
+| Mod of aexp * aexp
 
 and bexp =
 | Bool of bool
 | BoolVarAccess of var_access
 | BoolFuncCallVal of func_call
-| BoolParen of exp
+| BoolParen of bexp
+| Not of bexp
 | And of bexp * bexp
 | Or of bexp * bexp
 | GT of aexp * aexp
@@ -25,7 +26,6 @@ and bexp =
 | LE of aexp * aexp
 | EQ of exp * exp
 | NE of exp * exp
-| Not of bexp
 
 and update_op =
 | Equals

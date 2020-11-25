@@ -72,12 +72,45 @@ list: LBRACKET RBRACKET                                     { List([]) }
     | LBRACKET list_items RBRACKET                          { List($2) }
 ;
 
+/* Boolean expressions */
+bexp:
+    | or_exp                                                { $1 }
+;
+
+or_exp:
+    | or_exp OR and_exp                                     { Or($1, $3) }
+    | and_exp                                               { $1 }
+;
+
+and_exp:
+    | and_exp AND not_exp                                   { And($1, $3) }
+    | not_exp                                               { $1 }
+;
+
+not_exp:
+    | NOT bexp_primitive                                    { Not($2) }
+    | bexp_primitive                                        { $1 }
+;
+
+
+bexp_primitive:
+    | BOOL                                                  { Bool($1) }
+    | aexp GE aexp                                          { GE($1, $3) }
+    | aexp GT aexp                                          { GT($1, $3) }
+    | aexp LE aexp                                          { LE($1, $3) }
+    | aexp LT aexp                                          { LT($1, $3) }
+    | aexp DOUBLE_EQUALS aexp                               { EQ($1, $3) }
+    | aexp NOT_EQUALS aexp                                  { NE($1, $3) }
+    | aexp                                                  { Aexp($1) }
+;
+
 aexp:
     | modulo_exp                                            { $1 }
 ;
 
 modulo_exp:
     | modulo_exp MODULO add_exp                             { Mod($1, $3) }
+    | add_exp                                               { $1 }
 ;
 
 
@@ -109,38 +142,6 @@ aexp_primitive:
     | LPAREN aexp RPAREN                                    { IntParen($2) }
 ;
 
-/* Boolean expressions */
-bexp:
-    | aexp GE aexp                                          { GE($1, $3) }
-    | aexp GT aexp                                          { GT($1, $3) }
-    | aexp LE aexp                                          { LE($1, $3) }
-    | aexp LT aexp                                          { LT($1, $3) }
-    | or_exp                                                { $1 }
-;
-
-or_exp:
-    | or_exp OR and_exp                                     { Or($1, $3) }
-    | and_exp                                               { $1 }
-;
-
-and_exp:
-    | and_exp AND not_exp                                   { And($1, $3) }
-    | not_exp                                               { $1 }
-;
-
-not_exp:
-    | NOT bexp_primitive                                    { Not($2) }
-    | bexp_primitive                                        { $1 }
-;
-
-
-bexp_primitive:
-    | BOOL                                                  { Bool($1) }
-    | var_access                                            { BoolVarAccess($1) }
-    | function_call_val                                     { BoolFuncCallVal($1) }
-    | LPAREN bexp RPAREN                                    { BoolParen($2) }
-;
-
 paren_exp:
 	| LPAREN exp RPAREN                                     { Paren($2) }
 ;
@@ -151,7 +152,6 @@ exp:
     | var_access                                            { VarAccess($1) }
     | dict                                                  { $1 }
     | list                                                  { $1 }
-    | aexp                                                  { Aexp($1) }
     | bexp                                                  { Bexp($1) }
     | LAMBDA function_parameters COLON exp                  { Lambda(Params($2), $4) }
     | function_call_val                                     { FuncCallVal($1) }

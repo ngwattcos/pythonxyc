@@ -13,19 +13,20 @@ type aexp =
 | Mod of aexp * aexp
 
 and bexp =
-| Bool of bool
 | BoolVarAccess of var_access
 | BoolFuncCallVal of func_call
 | BoolParen of bexp
-| Not of bexp
-| And of bexp * bexp
 | Or of bexp * bexp
+| And of bexp * bexp
+| Not of bexp
+| Bool of bool
 | GT of aexp * aexp
 | GE of aexp * aexp
 | LT of aexp * aexp
 | LE of aexp * aexp
-| EQ of exp * exp
-| NE of exp * exp
+| EQ of aexp * aexp
+| NE of aexp * aexp
+| Aexp of aexp
 
 and update_op =
 | Equals
@@ -45,7 +46,6 @@ and var_access = Var of var
 
 and exp =
 | None
-| Aexp of aexp
 | Bexp of bexp
 | String of string
 | VarAccess of var_access

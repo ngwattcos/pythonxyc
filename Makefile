@@ -1,5 +1,8 @@
 all:
 	ocamllex lexer.mll && ocamlopt -o main lexer.ml
+	make lexer
+	make ast
+	make grammar
 
 gm:
 	ocamlyacc -v grammar2.mly && ocamlopt -o grammar2 grammar2.mli grammar2.ml

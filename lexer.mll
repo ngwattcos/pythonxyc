@@ -3,6 +3,12 @@
   open Printf
   open Char
   open Lexing
+  open Grammar
+
+exception UnrecognizedStr of string
+exception UnrecognizedChar
+exception Eof
+exception LexingError of string
 
   type token =
   | NEWLINE
@@ -74,9 +80,37 @@
   | REACT_CHAR of char
   | EOF
 
-exception UnrecognizedStr of string
-exception UnrecognizedChar
-exception Eof
+(* error and line number code borrowed from *)
+(* CS 4110 A2 from Cornell University *)
+let lineno = ref 1
+let linestart = ref (-1)
+
+let newline lexbuf : unit =
+  linestart := Lexing.lexeme_start lexbuf;
+  incr lineno
+
+let info lexbuf =
+  let c1 = Lexing.lexeme_start lexbuf in
+  let c2 = Lexing.lexeme_end lexbuf in
+  let l = !lineno in
+  let c = !linestart + 1 in
+    ((l, c1 - c),(l, c2 - c - 1))
+
+let error lexbuf msg =
+  let i = info lexbuf in
+  let t = Lexing.lexeme lexbuf in
+  let ((l1,c1),(l2,c2)) = i in
+  let s =
+    if l2=l1
+    then Printf.sprintf "\nline %d, characters %d-%d" l1 c1 c2
+    else Printf.sprintf "\nline %d, character %d, to line %d, character %d" l1 c1 l2 c2 in
+  let err = Printf.sprintf "%s: lexing error %s at %s."
+    s
+    msg
+    t in
+  raise (LexingError err)
+
+
 }
 
 (* 
@@ -221,7 +255,7 @@ rules
 rule token = parse
 | [' ' '\t'] { token lexbuf }
 | _extend_ (_eol_ | [' ' '\t'])* { printf "(...)"; token lexbuf }
-| _eol_+ { printf " (\\n)\n"; Lexing.new_line lexbuf; NEWLINE }
+| _eol_ { newline lexbuf; token lexbuf }
 | _singlelinecomment_ { printf "#"; single_comment lexbuf }
 | _multilinecomment_ { printf "'''---"; multi_comment lexbuf }
 | [' ' '\t' '\n'] { print_endline "[ws]"; token lexbuf }
@@ -290,12 +324,7 @@ rule token = parse
 | _jlet_ { printf "LET "; JLET }
 | _var_ as var { printf "var(%s) " var; VAR var}
 | eof { EOF; print_endline "\nEOF"; raise End_of_file }
-| _ as c {
-  let pos = lexbuf.Lexing.lex_curr_p in
-  printf "Error @ line %d\n" pos.Lexing.pos_lnum;
-  printf "Unrecognized character: %c\n" c;
-  raise UnrecognizedChar
-  }
+| _ as c { error lexbuf (String.make 1 c) }
 
 and parse_single_quote = parse
 | _singlequote_ { printf "' "; SQUOTE; token lexbuf }

@@ -9,7 +9,7 @@ gm:
 
 grammar:
 	ocamlyacc grammar.mly
-	ocamlopt -o grammar grammar.mli grammar.ml
+	ocamlopt -o Grammar grammar.mli grammar.ml
 
 
 lexer:

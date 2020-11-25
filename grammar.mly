@@ -6,31 +6,31 @@ open Ast
 
 
 /* Ocamlyacc Declarations */
-%token IMPORT FROM AS
-%token JLET JCONST
-%token NONE
-%token <string> VAR
-%token COMMA
-%token DQUOTE SQUOTE
-%token <string> STRING
-%token <int> INT
-%token <float> FLOAT
-%right PLUS_EQUALS MINUS_EQUALS TIMES_EQUALS DIVIDE_EQUALS MODULO_EQUALS EQUALS
-%left AND OR
-%nonassoc GT GE LT LE DOUBLE_EQUALS NOT_EQUALS
-%left PLUS MINUS TIMES DIVIDE MODULO
-%right EXP
-%token COLON END
-%token IF ELIF ELSE
-%left NOT
-%token <bool> BOOL
-%token WHILE FOR IN BREAK CONTINUE
-%token DEF CLASS LAMBDA RETURN
-%left DOT IS DELETE
-%token TRY EXCEPT RAISE
-%token <char> REACT_CHAR
-%token NEWLINE
-%token LPAREN RPAREN LBRACE RBRACE LBRACKET RBRACKET
+%token <Ast.info> IMPORT FROM AS
+%token <Ast.info> JLET JCONST
+%token <Ast.info> NONE
+%token <Ast.info * string> VAR
+%token <Ast.info> COMMA
+%token <Ast.info> DQUOTE SQUOTE
+%token <Ast.info * string> STRING
+%token <Ast.info * int> INT
+%token <Ast.info * float> FLOAT
+%token <Ast.info>
+    EQUALS PLUS_EQUALS MINUS_EQUALS TIMES_EQUALS DIVIDE_EQUALS MODULO_EQUALS
+    AND OR
+    GT GE LT LE DOUBLE_EQUALS NOT_EQUALS
+    PLUS MINUS TIMES DIVIDE MODULO
+    EXP
+    COLON END
+    IF ELIF ELSE
+    NOT
+%token <Ast.info * bool> BOOL
+%token <Ast.info> WHILE FOR IN BREAK CONTINUE
+%token <Ast.info> DEF CLASS LAMBDA RETURN
+    DOT IS DELETE
+%token <Ast.info> TRY EXCEPT RAISE
+%token <Ast.info> NEWLINE
+%token <Ast.info> LPAREN RPAREN LBRACE RBRACE LBRACKET RBRACKET
 %token EOF
 
 %left NEG		/* negation -- unary minus */
@@ -51,8 +51,8 @@ open Ast
 program: command_seq EOF                    { $1 }
 ;
 
-var_access: VAR                                                { Var($1) }
-    | var_access DOT VAR                                       { Dot($1, $3) }
+var_access: VAR                                                { Var(snd $1) }
+    | var_access DOT VAR                                       { Dot($1, snd $3) }
     | var_access LBRACKET exp RBRACKET                         { Key($1, $3) }
 ;
 
@@ -94,7 +94,7 @@ not_exp:
 
 
 bexp_primitive:
-    | BOOL                                                  { Bool($1) }
+    | BOOL                                                  { Bool(snd $1) }
     | aexp GE aexp                                          { GE($1, $3) }
     | aexp GT aexp                                          { GT($1, $3) }
     | aexp LE aexp                                          { LE($1, $3) }
@@ -135,8 +135,8 @@ exponen_exp:
 ;
 
 aexp_primitive:
-    | INT                                                   { Int($1) }
-    | FLOAT                                                 { Float($1) }
+    | INT                                                   { Int(snd $1) }
+    | FLOAT                                                 { Float(snd $1) }
     | var_access                                            { IntVarAccess($1) }
     | function_call_val                                     { IntFuncCallVal($1) }
     | LPAREN aexp RPAREN                                    { IntParen($2) }
@@ -147,8 +147,8 @@ paren_exp:
 ;
 
 react_attribute:
-    | VAR EQUALS STRING                                     { Attrib($1, String($3)) }
-    | VAR EQUALS LBRACE exp RBRACE                          { Attrib($1, $4) }
+    | VAR EQUALS STRING                                     { Attrib(snd $1, String(snd $3)) }
+    | VAR EQUALS LBRACE exp RBRACE                          { Attrib(snd $1, $4) }
 ;
 
 react_attribute_list:
@@ -157,12 +157,12 @@ react_attribute_list:
 ;
 
 react_open:
-    | LT VAR GT                                             { ReactOpen($2, []) }
-    | LT VAR react_attribute_list GT                        { ReactOpen($2, $3) }
+    | LT VAR GT                                             { ReactOpen(snd $2, []) }
+    | LT VAR react_attribute_list GT                        { ReactOpen(snd $2, $3) }
 ;
 
 react_close:
-    | LT DIVIDE VAR GT                                      { ReactClose($3) }
+    | LT DIVIDE VAR GT                                      { ReactClose(snd $3) }
 ;
 
 react_component:
@@ -177,7 +177,7 @@ child_component_list:
 
 exp:
     | NONE                                                  { None }
-    | STRING                                                { String($1) }
+    | STRING                                                { String(snd $1) }
     | var_access                                            { VarAccess($1) }
     | dict                                                  { $1 }
     | list                                                  { $1 }
@@ -189,8 +189,8 @@ exp:
 ;
 
 val_update:
-    | JLET VAR EQUALS exp                                   { JLet($2, $4) }
-    | JCONST VAR EQUALS exp                                 { JConst($2, $4) }
+    | JLET VAR EQUALS exp                                   { JLet(snd $2, $4) }
+    | JCONST VAR EQUALS exp                                 { JConst(snd $2, $4) }
 	| var_access EQUALS exp                                 { Update($1, Equals, $3) }
 	| var_access PLUS_EQUALS exp                            { Update($1, PlusEquals, $3) }
 	| var_access MINUS_EQUALS exp                           { Update($1, MinusEquals, $3) }
@@ -199,15 +199,15 @@ val_update:
 	| var_access MODULO_EQUALS exp                          { Update($1, ModuloEquals, $3) }
 ;
 
-import: IMPORT VAR FROM STRING                              { ImportBase($2, $4) }
-    | IMPORT VAR FROM STRING AS VAR                         { ImportAs($2, $4, $6) }
+import: IMPORT VAR FROM STRING                              { ImportBase(snd $2, snd $4) }
+    | IMPORT VAR FROM STRING AS VAR                         { ImportAs(snd $2, snd $4, snd $6) }
 ;
 
 while_com: WHILE exp COLON command_seq END                  { While($2, $4) }
 ;
 
-function_parameters: VAR                                    { [$1] }
-    | function_parameters COMMA VAR                         { $3::$1 }
+function_parameters: VAR                                    { [snd $1] }
+    | function_parameters COMMA VAR                         { (snd $3)::$1 }
 ;
 
 function_arguments: exp                                     { [$1] }
@@ -224,8 +224,8 @@ function_call_com: var_access LPAREN RPAREN                 { Call($1, Args([]))
 
 for_com: FOR VAR IN
     VAR LPAREN function_arguments RPAREN
-    COLON command_seq END                           { ForFunc($2, ($4, Args($6)), $9) }
-    | FOR VAR IN VAR COLON command_seq END          { ForIterVar($2, $4, $6) }
+    COLON command_seq END                           { ForFunc(snd $2, (snd $4, Args($6)), $9) }
+    | FOR VAR IN VAR COLON command_seq END          { ForIterVar(snd $2, snd $4, $6) }
 ;
 
 if_com: IF exp COLON command_seq END                       { IfBase($2, $4, []) }
@@ -244,7 +244,7 @@ command:
     | if_com                                                { If($1) }
     | function_call_com                                     { FuncCallCom($1) }
     | DEF VAR LPAREN function_parameters RPAREN COLON
-        command_seq END                                     { FuncDef($2, Params($4), $7) }
+        command_seq END                                     { FuncDef(snd $2, Params($4), $7) }
     | RETURN exp                                            { ReturnExp($2) }
     | RETURN                                                { Return }
     | BREAK                                                 { Break }

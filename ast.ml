@@ -1,3 +1,7 @@
+(* info/error-reporting type copied from *)
+(* CS 4110 A2 from Cornell University *)
+type info = (int * int) * (int * int)
+
 type aexp =
 | Int of int
 | Float of float

@@ -1,11 +1,22 @@
 all:
-	ocamllex lexer.mll && ocamlopt -o main lexer.ml
-	make lexer
 	make ast
 	make grammar
+	make lexer
+	make transform
+	make main
 
-gm:
-	ocamlyacc -v grammar2.mly && ocamlopt -o grammar2 grammar2.mli grammar2.ml
+ml:
+	ocamlopt -c ast.ml
+	ocamlopt -c grammar.mli grammar.ml
+	ocamlopt -c Lexer lexer.ml
+	ocamlolt -c main main.ml
+
+o:
+	ocamlopt -o Ast ast.cmx
+	ocamlopt -o Grammar ast.cmx grammar.cmx
+	ocamlopt -o Lexer grammar.cmx lexer.cmx
+	ocamlopt -o Transform ast.cmx transform.cmx
+	ocamlopt -o main ast.cmx grammar.cmx lexer.cmx transform.cmx
 
 grammar:
 	ocamlyacc grammar.mly
@@ -20,7 +31,14 @@ ast:
 	ocamlopt -o Ast ast.ml
 
 clean:
-	rm *.cmi *.cmx *.o main grammar
+	rm *.cmi *.cmx *.o *.mli main Grammar Lexer Transform main grammar.ml lexer.ml
 
 clean-grammar:
 	rm grammar
+
+transform:
+	ocamlopt -o Transform transform.ml
+
+main:
+	ocamlopt -c main.ml
+	ocamlopt -o main ast.cmx grammar.cmx lexer.cmx transform.cmx main.cmx

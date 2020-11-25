@@ -9,7 +9,7 @@ exception UnrecognizedStr of string
 exception UnrecognizedChar
 exception Eof
 exception LexingError of string
-
+(*
   type token =
   | NEWLINE
   | EXTEND
@@ -79,6 +79,7 @@ exception LexingError of string
   | REACT_JSX of string
   | REACT_CHAR of char
   | EOF
+*)
 
 (* error and line number code borrowed from *)
 (* CS 4110 A2 from Cornell University *)
@@ -259,80 +260,80 @@ rule token = parse
 | _singlelinecomment_ { printf "#"; single_comment lexbuf }
 | _multilinecomment_ { printf "'''---"; multi_comment lexbuf }
 | [' ' '\t' '\n'] { print_endline "[ws]"; token lexbuf }
-| _doublequote_ { printf "\""; DQUOTE; parse_double_quote lexbuf }
-| _singlequote_ { printf "'"; SQUOTE; parse_single_quote lexbuf }
-| _none_ { printf "NONE "; NONE }
-| _true_ { printf "(TRUE) "; BOOL(true) }
-| _false_ { printf "(FALSE) "; BOOL(false) }
-| _string_ as str {printf "\"%s\" " str;  STRING str }
-| _int_ as n { printf "int(%s) " n; INT (int_of_string n) }
-| _float_ as n { printf "float(%s) " n; FLOAT (float_of_string n) }
-| _equals_ { printf "(=) "; EQUALS }
-| _plusequals_ { printf "(+=) "; PLUS_EQUALS }
-| _minusequals_ { printf "(-=) "; MINUS_EQUALS }
-| _timesequals_ { printf "(*=) "; TIMES_EQUALS }
-| _divideequals_ { printf "(/=) "; DIVIDE_EQUALS }
-| _moduloequals_ { printf "(MOD=) "; MODULO_EQUALS }
-| _doubleequals_ { printf "(==) "; DOUBLE_EQUALS }
-| _notequals_ { printf "(!=) "; NOT_EQUALS }
-| _plus_ { printf "(+) "; PLUS }
-| _minus_ { printf "(-) "; MINUS }
-| _times_ { printf "(*) "; TIMES }
-| _exp_ { printf "(**) "; EXP }
-| _divide_ { printf "(/) "; DIVIDE }
-| _floordivide_ { printf "(//) "; FLOOR_DIVIDE }
-| _modulo_ { printf "(MOD) "; MODULO }
-| _gt_ { printf "> "; GT }
-| _ge_ { printf ">= "; GE }
-| _lt_ { printf "< "; LT }
-| _le_ { printf "<= "; LE }
-| _lparen_ { printf "·(·"; LPAREN }
-| _rparen_ { printf "·)·"; RPAREN }
-| _lbracket_ { printf "·[·"; LBRACKET }
-| _rbracket_ { printf "·]·"; RBRACKET }
-| _comma_ { printf ", "; COMMA }
-| _lbrace_ { printf "·{·"; LBRACE }
-| _rbrace_ { printf "·}·"; RBRACE }
-| _colon_ { printf ":: "; COLON }
-| _endblock_ { printf "END "; END }
+(*| _doublequote_ { printf "\""; DQUOTE(info lexbuf); parse_double_quote lexbuf }
+| _singlequote_ { printf "'"; SQUOTE(info lexbuf); parse_single_quote lexbuf }*)
+| _none_ { printf "NONE "; NONE(info lexbuf) }
+| _true_ { printf "(TRUE) "; BOOL(info lexbuf, true) }
+| _false_ { printf "(FALSE) "; BOOL((info lexbuf), false) }
+| _string_ as str {printf "\"%s\" " str;  STRING((info lexbuf), str) }
+| _int_ as n { printf "int(%s) " n; INT((info lexbuf), int_of_string n) }
+| _float_ as n { printf "float(%s) " n; FLOAT((info lexbuf), float_of_string n) }
+| _equals_ { printf "(=) "; EQUALS(info lexbuf) }
+| _plusequals_ { printf "(+=) "; PLUS_EQUALS(info lexbuf) }
+| _minusequals_ { printf "(-=) "; MINUS_EQUALS(info lexbuf) }
+| _timesequals_ { printf "(*=) "; TIMES_EQUALS(info lexbuf) }
+| _divideequals_ { printf "(/=) "; DIVIDE_EQUALS(info lexbuf) }
+| _moduloequals_ { printf "(MOD=) "; MODULO_EQUALS(info lexbuf) }
+| _doubleequals_ { printf "(==) "; DOUBLE_EQUALS(info lexbuf) }
+| _notequals_ { printf "(!=) "; NOT_EQUALS(info lexbuf) }
+| _plus_ { printf "(+) "; PLUS(info lexbuf) }
+| _minus_ { printf "(-) "; MINUS(info lexbuf) }
+| _times_ { printf "(*) "; TIMES(info lexbuf) }
+| _exp_ { printf "(**) "; EXP(info lexbuf) }
+| _divide_ { printf "(/) "; DIVIDE(info lexbuf) }
+(*| _floordivide_ { printf "(//) "; FLOOR_DIVIDE(info lexbuf) }*)
+| _modulo_ { printf "(MOD) "; MODULO(info lexbuf) }
+| _gt_ { printf "> "; GT(info lexbuf) }
+| _ge_ { printf ">= "; GE(info lexbuf) }
+| _lt_ { printf "< "; LT(info lexbuf) }
+| _le_ { printf "<= "; LE(info lexbuf) }
+| _lparen_ { printf "·(·"; LPAREN(info lexbuf) }
+| _rparen_ { printf "·)·"; RPAREN(info lexbuf) }
+| _lbracket_ { printf "·[·"; LBRACKET(info lexbuf) }
+| _rbracket_ { printf "·]·"; RBRACKET(info lexbuf) }
+| _comma_ { printf ", "; COMMA(info lexbuf) }
+| _lbrace_ { printf "·{·"; LBRACE(info lexbuf) }
+| _rbrace_ { printf "·}·"; RBRACE(info lexbuf) }
+| _colon_ { printf ":: "; COLON(info lexbuf) }
+| _endblock_ { printf "END "; END(info lexbuf) }
 | _reactblock_ { printf "REACTBEGIN "; react lexbuf }
-| _dot_ { printf "(dot)"; DOT }
-| _and_ { printf "(&&) "; AND }
-| _or_ { printf "(||) "; OR }
-| _not_ { printf "!"; NOT }
-| _in_ { printf "IN "; IN }
-| _is_ { printf "IS "; IS }
-| _if_ { printf "IF "; IF }
-| _elif_ { printf "ELIF "; ELIF }
-| _else_ { printf "ELSE "; ELSE }
-| _while_ { printf "WHILE "; WHILE }
-| _for_ { printf "FOR "; FOR }
-| _break_ { printf "BREAK "; BREAK }
-| _continue_ { printf "CONTINUE "; CONTINUE }
-| _class_ { printf "CLASS "; CLASS }
-| _def_ { printf "DEF "; DEF }
-| _lambda_ { printf "LAMBDA "; LAMBDA }
-| _return_ { printf "RETURN "; RETURN }
-| _try_ { printf "TRY "; TRY }
-| _except_ {printf "EXCEPT ";  EXCEPT }
-| _raise_ { printf "RAISE "; RAISE }
-| _delete_ { printf "DELETE "; DELETE }
-| _import_ { printf "IMPORT "; IMPORT }
-| _from_ { printf "FROM "; FROM }
-| _as_ { printf "AS "; AS }
-| _jconst_ { printf "CONST "; JCONST }
-| _jlet_ { printf "LET "; JLET }
-| _var_ as var { printf "var(%s) " var; VAR var}
+| _dot_ { printf "(dot)"; DOT(info lexbuf) }
+| _and_ { printf "(&&) "; AND(info lexbuf) }
+| _or_ { printf "(||) "; OR(info lexbuf) }
+| _not_ { printf "!"; NOT(info lexbuf) }
+| _in_ { printf "IN "; IN(info lexbuf) }
+| _is_ { printf "IS "; IS(info lexbuf) }
+| _if_ { printf "IF "; IF(info lexbuf) }
+| _elif_ { printf "ELIF "; ELIF(info lexbuf) }
+| _else_ { printf "ELSE "; ELSE(info lexbuf) }
+| _while_ { printf "WHILE "; WHILE(info lexbuf) }
+| _for_ { printf "FOR "; FOR(info lexbuf) }
+| _break_ { printf "BREAK "; BREAK(info lexbuf) }
+| _continue_ { printf "CONTINUE "; CONTINUE(info lexbuf) }
+| _class_ { printf "CLASS "; CLASS(info lexbuf) }
+| _def_ { printf "DEF "; DEF(info lexbuf) }
+| _lambda_ { printf "LAMBDA "; LAMBDA(info lexbuf) }
+| _return_ { printf "RETURN "; RETURN(info lexbuf) }
+| _try_ { printf "TRY "; TRY(info lexbuf) }
+| _except_ {printf "EXCEPT ";  EXCEPT(info lexbuf) }
+| _raise_ { printf "RAISE "; RAISE(info lexbuf) }
+| _delete_ { printf "DELETE "; DELETE(info lexbuf) }
+| _import_ { printf "IMPORT "; IMPORT(info lexbuf) }
+| _from_ { printf "FROM "; FROM(info lexbuf) }
+| _as_ { printf "AS "; AS(info lexbuf) }
+| _jconst_ { printf "CONST "; JCONST(info lexbuf) }
+| _jlet_ { printf "LET "; JLET(info lexbuf) }
+| _var_ as var { printf "var(%s) " var; VAR((info lexbuf), var)}
 | eof { EOF; print_endline "\nEOF"; raise End_of_file }
 | _ as c { error lexbuf (String.make 1 c) }
 
-and parse_single_quote = parse
+(*and parse_single_quote = parse
 | _singlequote_ { printf "' "; SQUOTE; token lexbuf }
 | _ as c { printf "%c" c; parse_single_quote lexbuf }
 
 and parse_double_quote = parse
 | _doublequote_ { printf "\" "; DQUOTE; token lexbuf }
-| _ as c { printf "%c" c; parse_double_quote lexbuf }
+| _ as c { printf "%c" c; parse_double_quote lexbuf }*)
 
 and single_comment = parse
 | _eol_ { print_endline " ##"; token lexbuf }
@@ -345,7 +346,7 @@ and multi_comment = parse
 
 and react = parse
 | _reactblock_ { printf "\nREACTEND "; token lexbuf }
-| _ as jsx { printf "%c" jsx; REACT_CHAR (jsx); react lexbuf }
+(*| _ as jsx { printf "%c" jsx; REACT_CHAR (jsx); react lexbuf }*)
 
 
 (* 

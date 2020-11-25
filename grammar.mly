@@ -146,6 +146,35 @@ paren_exp:
 	| LPAREN exp RPAREN                                     { Paren($2) }
 ;
 
+react_attribute:
+    | VAR EQUALS STRING                                     { Attrib($1, String($3)) }
+    | VAR EQUALS LBRACE exp RBRACE                          { Attrib($1, $4) }
+;
+
+react_attribute_list:
+    | react_attribute                                       { $1::[] }
+    | react_attribute_list react_attribute                  { $2::$1 }
+;
+
+react_open:
+    | LT VAR GT                                             { ReactOpen($2, []) }
+    | LT VAR react_attribute_list GT                        { ReactOpen($2, $3) }
+;
+
+react_close:
+    | LT DIVIDE VAR GT                                      { ReactClose($3) }
+;
+
+react_component:
+    | react_open react_close                                { ReactComponent($1, []) }
+    | react_open child_component_list react_close           { ReactComponent($1, $2) }
+;
+
+child_component_list:
+    | react_component                                       { $1::[] }
+    | child_component_list react_component                  { $2::$1 }
+;
+
 exp:
     | NONE                                                  { None }
     | STRING                                                { String($1) }
@@ -156,6 +185,7 @@ exp:
     | LAMBDA function_parameters COLON exp                  { Lambda(Params($2), $4) }
     | function_call_val                                     { FuncCallVal($1) }
     | paren_exp                                             { $1 }
+    | react_component                                       { React($1) }
 ;
 
 val_update:

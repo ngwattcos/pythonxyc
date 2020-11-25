@@ -44,6 +44,14 @@ and var_access = Var of var
 | Dot of var_access * var
 | Key of var_access * exp
 
+and react_open = ReactOpen of string * (react_attribute list)
+
+and react_close = ReactClose of string
+
+and react_component = ReactComponent of react_open * (react_component list)
+
+and react_attribute = Attrib of string * exp
+
 and exp =
 | None
 | Bexp of bexp
@@ -54,6 +62,7 @@ and exp =
 | Lambda of params_list * (exp)
 | FuncCallVal of func_call       (* Applying arguments *)
 | Paren of exp
+| React of react_component
 
 and com =
 | ValUpdate of val_update

@@ -252,6 +252,10 @@ command:
     | CONTINUE                                              { Continue }
 ;
 
+consume_newlines:
+    | NEWLINE                                               { None }
+    | consume_newlines NEWLINE                              { None }
+
 command_seq:
-    | command_seq NEWLINE command                           { $3::$1 }
+    | command_seq consume_newlines command                           { $3::$1 }
     | command                                               { [$1] }

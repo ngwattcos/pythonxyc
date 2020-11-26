@@ -5,7 +5,7 @@ def Card(title, descr):
 
 
 
-        <div className="potato" action={true}>
+        <div className="potato" action={True}>
             hello there
         </div>
     )

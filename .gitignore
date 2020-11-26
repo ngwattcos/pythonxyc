@@ -1,5 +1,15 @@
+Ast
+
+Grammar
+grammar.mli
+grammar.ml
+
+Lexer
+lexer.ml
+
+Transform
+
 *.cmi
 *.cmx
 *.o
-lexer.ml
-main
+*.mlu

@@ -159,10 +159,12 @@ react_attribute_list:
 react_open:
     | LT VAR GT                                             { ReactOpen(snd $2, []) }
     | LT VAR react_attribute_list GT                        { ReactOpen(snd $2, $3) }
+    | LT GT                                                 { ReactOpen("", []) }
 ;
 
 react_close:
     | LT DIVIDE VAR GT                                      { ReactClose(snd $3) }
+    | LT GT                                                 { ReactClose("") }
 ;
 
 react_component:

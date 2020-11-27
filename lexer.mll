@@ -324,7 +324,7 @@ rule token = parse
 | _jconst_ { printf "CONST "; JCONST(info lexbuf) }
 | _jlet_ { printf "LET "; JLET(info lexbuf) }
 | _var_ as var { printf "var(%s) " var; VAR((info lexbuf), var)}
-| eof { EOF; print_endline "\nEOF"; exit 0 }
+| eof { print_endline "\nEOF"; EOF }
 | _ as c { error lexbuf (String.make 1 c) }
 
 (*and parse_single_quote = parse

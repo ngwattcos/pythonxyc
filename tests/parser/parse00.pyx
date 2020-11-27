@@ -6,5 +6,3 @@
 '''
 Comments
 '''
-
-def 

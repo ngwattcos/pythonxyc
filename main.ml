@@ -4,10 +4,6 @@ open Grammar
 open Transform
 
 let () =
-  let _ =
-    if Array.length Sys.argv <> 2 then
-      (Printf.printf "Usage: imp <file>\n";
-       exit 0) in
   let filename = Sys.argv.(1) in
   let lexbuf = Lexing.from_channel (open_in filename) in
   let c =

@@ -358,7 +358,7 @@ trailer
 
  {
   (* let rec parse lexbuf = parse lexbuf *)
-
+  (*
   let main () = begin
     try
       let filename = Sys.argv.(1) in
@@ -371,4 +371,5 @@ trailer
     with Eof -> exit 0
   end;;
   main () ;;
+ *)
  }

@@ -31,7 +31,7 @@ ast:
 	ocamlopt -o Ast ast.ml
 
 clean:
-	rm *.cmi *.cmx *.cmo *.o *.mli Grammar Lexer Transform Ast main grammar.ml lexer.ml
+	rm *.cmi *.cmx *.o *.mli Grammar Lexer Transform Ast main grammar.ml lexer.ml
 	rm parser_test
 
 clean-grammar:

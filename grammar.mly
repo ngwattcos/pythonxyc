@@ -167,7 +167,7 @@ react_close:
     | LT DIVIDE GT                                          { ReactClose("") }
 ;
 
-react_component:d
+react_component:
     | react_open react_close                                { ReactComponentRecur($1, []) }
     | react_open child_component_list react_close           { ReactComponentRecur($1, $2) }
     | react_open LBRACE exp RBRACE react_close              { ReactComponentExp($1, $3) }

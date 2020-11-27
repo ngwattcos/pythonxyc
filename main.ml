@@ -18,4 +18,4 @@ let () =
         (Lexing.lexeme_end lexbuf - !Lexer.linestart - 1);
       exit 1 in
   (*   ignore (Eval.evalc (Eval.make_configuration c)) *)
-  ignore (Transform.transformp c)
+  ignore (Transform.transform_p c)

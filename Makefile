@@ -31,7 +31,8 @@ ast:
 	ocamlopt -o Ast ast.ml
 
 clean:
-	rm *.cmi *.cmx *.o *.mli Grammar Lexer Transform Ast main grammar.ml lexer.ml
+	rm *.cmi *.cmx *.cmo *.o *.mli Grammar Lexer Transform Ast main grammar.ml lexer.ml
+	rm parser_test
 
 clean-grammar:
 	rm grammar
@@ -42,3 +43,9 @@ transform:
 main:
 	ocamlopt -c main.ml
 	ocamlopt -o main ast.cmx grammar.cmx lexer.cmx transform.cmx main.cmx
+test:
+	make ast
+	make grammar
+	make lexer
+	make transform
+	ocamlfind ocamlc -o parser_test -package oUnit -linkpkg -g ast.ml grammar.ml lexer.ml parser_test.ml

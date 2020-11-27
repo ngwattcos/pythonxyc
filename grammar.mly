@@ -48,16 +48,16 @@ open Ast
 /* Grammar rules */
 %%
 
-program: command_seq EOF                    { $1 }
+program: program_lines EOF                                  { $1 }
 ;
 
-var_access: VAR                                                { Var(snd $1) }
-    | var_access DOT VAR                                       { Dot($1, snd $3) }
-    | var_access LBRACKET exp RBRACKET                         { Key($1, $3) }
+var_access: VAR                                             { Var(snd $1) }
+    | var_access DOT VAR                                    { Dot($1, snd $3) }
+    | var_access LBRACKET exp RBRACKET                      { Key($1, $3) }
 ;
 
-dict_entries: exp COLON exp                               { [($1, $3)] }
-    | dict_entries COMMA exp COLON exp                    { ($3, $5)::$1 }
+dict_entries: exp COLON exp                                 { [($1, $3)] }
+    | dict_entries COMMA exp COLON exp                      { ($3, $5)::$1 }
 ;
 
 dict: LBRACE RBRACE                                         { Dict([]) }
@@ -164,12 +164,13 @@ react_open:
 
 react_close:
     | LT DIVIDE VAR GT                                      { ReactClose(snd $3) }
-    | LT GT                                                 { ReactClose("") }
+    | LT DIVIDE GT                                          { ReactClose("") }
 ;
 
-react_component:
-    | react_open react_close                                { ReactComponent($1, []) }
-    | react_open child_component_list react_close           { ReactComponent($1, $2) }
+react_component:d
+    | react_open react_close                                { ReactComponentRecur($1, []) }
+    | react_open child_component_list react_close           { ReactComponentRecur($1, $2) }
+    | react_open LBRACE exp RBRACE react_close              { ReactComponentExp($1, $3) }
 ;
 
 child_component_list:
@@ -178,7 +179,7 @@ child_component_list:
 ;
 
 exp:
-    | NONE                                                  { None }
+    | NONE                                                  { NoneExp }
     | STRING                                                { String(snd $1) }
     | var_access                                            { VarAccess($1) }
     | dict                                                  { $1 }
@@ -257,7 +258,14 @@ command:
 consume_newlines:
     | NEWLINE                                               { None }
     | consume_newlines NEWLINE                              { None }
+;
 
 command_seq:
-    | command_seq consume_newlines command                           { $3::$1 }
+    | command_seq consume_newlines command                  { $3::$1 }
     | command                                               { [$1] }
+;
+
+program_lines:
+    | consume_newlines command_seq                          { $2 }
+    | command_seq                                           { $1 }
+;

@@ -52,12 +52,14 @@ and react_open = ReactOpen of string * (react_attribute list)
 
 and react_close = ReactClose of string
 
-and react_component = ReactComponent of react_open * (react_component list)
+and react_component =
+| ReactComponentRecur of react_open * (react_component list)
+| ReactComponentExp of react_open * exp
 
 and react_attribute = Attrib of string * exp
 
 and exp =
-| None
+| NoneExp
 | Bexp of bexp
 | String of string
 | VarAccess of var_access
@@ -69,6 +71,7 @@ and exp =
 | React of react_component
 
 and com =
+| NoneCom
 | ValUpdate of val_update
 | FuncDef of var * params_list * (com list)
 | FuncCallCom of func_call

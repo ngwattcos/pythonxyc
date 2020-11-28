@@ -49,7 +49,6 @@ open Ast
 %%
 
 program: program_lines EOF                                  { $1 }
-| program_lines consume_newlines EOF                        { $1 }
 ;
 
 var_access: VAR                                             { Var(snd $1) }
@@ -268,5 +267,7 @@ command_seq:
 
 program_lines:
     | consume_newlines command_seq                          { $2 }
+    | command_seq consume_newlines                          { $1 }
+    | consume_newlines command_seq consume_newlines         { $2 }
     | command_seq                                           { $1 }
 ;

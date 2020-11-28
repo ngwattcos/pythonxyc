@@ -22,7 +22,6 @@ grammar:
 	ocamlyacc grammar.mly
 	ocamlopt -o Grammar grammar.mli grammar.ml
 
-
 lexer:
 	ocamllex lexer.mll
 	ocamlopt -o Lexer lexer.ml
@@ -31,7 +30,7 @@ ast:
 	ocamlopt -o Ast ast.ml
 
 clean:
-	rm *.cmi *.cmx *.o *.mli Grammar Lexer Transform Ast main grammar.ml lexer.ml
+	rm *.cmi *.cmx *.o *.mli Grammar Lexer Transform Ast main grammar.ml lexer.ml print
 
 clean-grammar:
 	rm grammar
@@ -42,3 +41,7 @@ transform:
 main:
 	ocamlopt -c main.ml
 	ocamlopt -o main ast.cmx grammar.cmx lexer.cmx transform.cmx main.cmx
+
+print:
+	make all
+	ocamlopt -o print pprint.ml

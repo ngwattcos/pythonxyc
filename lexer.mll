@@ -88,7 +88,8 @@ let linestart = ref (-1)
 
 let newline lexbuf : unit =
   linestart := Lexing.lexeme_start lexbuf;
-  incr lineno
+  incr lineno;
+  ()
 
 let info lexbuf =
   let c1 = Lexing.lexeme_start lexbuf in
@@ -124,7 +125,6 @@ Definitions
 
 (* whitespace *)
 (* let _crlf_ = '\\r\\n' *)
-let _newline_ = '\n'
 let _eol_ = '\n' | '\r''\n'
 let _tab_ = '\t'
 (* let _whitespace_ = '\s' *)
@@ -256,7 +256,7 @@ rules
 rule token = parse
 | [' ' '\t'] { token lexbuf }
 | _extend_ (_eol_ | [' ' '\t'])* { printf "(...)"; token lexbuf }
-| _eol_ { newline lexbuf; token lexbuf }
+| _eol_ { newline lexbuf; NEWLINE(info lexbuf)  }
 | _singlelinecomment_ { printf "#"; single_comment lexbuf }
 | _multilinecomment_ { printf "'''---"; multi_comment lexbuf }
 | [' ' '\t' '\n'] { print_endline "[ws]"; token lexbuf }

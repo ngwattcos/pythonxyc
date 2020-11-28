@@ -48,7 +48,9 @@ open Ast
 /* Grammar rules */
 %%
 
-program: program_lines EOF                                  { $1 }
+program:
+    | EOF                                                   { [] }
+    | program_lines EOF                                     { $1 }
 ;
 
 var_access: VAR                                             { Var(snd $1) }
@@ -121,29 +123,22 @@ add_exp:
 ;
 
 times_exp:
-    | times_exp TIMES neg_exp                               { Times($1, $3) }
-    | times_exp DIVIDE neg_exp                              { Div($1, $3) }
+    | times_exp TIMES exponen_exp                           { Times($1, $3) }
+    | times_exp DIVIDE exponen_exp                          { Div($1, $3) }
     | exponen_exp                                           { $1 }
-;
-
-neg_exp:
-	| MINUS exponen_exp %prec NEG                           { Neg($2) }
 ;
 
 exponen_exp:
     | exponen_exp EXP aexp_primitive                        { Expon($1, $3) }
+    | aexp_primitive                                        { $1 }
 ;
 
 aexp_primitive:
     | INT                                                   { Int(snd $1) }
     | FLOAT                                                 { Float(snd $1) }
-    | var_access                                            { IntVarAccess($1) }
-    | function_call_val                                     { IntFuncCallVal($1) }
-    | LPAREN aexp RPAREN                                    { IntParen($2) }
-;
-
-paren_exp:
-	| LPAREN exp RPAREN                                     { Paren($2) }
+    | var_access                                            { VarAccess($1) }
+    | function_call_val                                     { FuncCallVal($1) }
+    | LPAREN exp RPAREN                                     { Paren($2) }
 ;
 
 react_attribute:
@@ -181,13 +176,10 @@ child_component_list:
 exp:
     | NONE                                                  { NoneExp }
     | STRING                                                { String(snd $1) }
-    | var_access                                            { VarAccess($1) }
     | dict                                                  { $1 }
     | list                                                  { $1 }
     | bexp                                                  { Bexp($1) }
     | LAMBDA function_parameters COLON exp                  { Lambda(Params($2), $4) }
-    | function_call_val                                     { FuncCallVal($1) }
-    | paren_exp                                             { $1 }
     | react_component                                       { React($1) }
 ;
 
@@ -256,8 +248,8 @@ command:
 ;
 
 consume_newlines:
-    | NEWLINE                                               { None }
-    | consume_newlines NEWLINE                              { None }
+    | NEWLINE                                               { NoneCom }
+    | consume_newlines NEWLINE                              { NoneCom }
 ;
 
 command_seq:

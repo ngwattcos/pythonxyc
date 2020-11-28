@@ -19,7 +19,8 @@ o:
 	ocamlopt -o main ast.cmx grammar.cmx lexer.cmx transform.cmx
 
 grammar:
-	ocamlyacc grammar.mly
+	make ast
+	ocamlyacc -v grammar.mly
 	ocamlopt -o Grammar grammar.mli grammar.ml
 
 

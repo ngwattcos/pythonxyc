@@ -5,9 +5,9 @@ type info = (int * int) * (int * int)
 type aexp =
 | Int of int
 | Float of float
-| IntVarAccess of var_access
-| IntFuncCallVal of func_call
-| IntParen of aexp
+| VarAccess of var_access
+| FuncCallVal of func_call
+| Paren of exp
 | Expon of aexp * aexp
 | Neg of aexp
 | Times of aexp * aexp
@@ -17,9 +17,6 @@ type aexp =
 | Mod of aexp * aexp
 
 and bexp =
-| BoolVarAccess of var_access
-| BoolFuncCallVal of func_call
-| BoolParen of bexp
 | Or of bexp * bexp
 | And of bexp * bexp
 | Not of bexp
@@ -62,12 +59,9 @@ and exp =
 | NoneExp
 | Bexp of bexp
 | String of string
-| VarAccess of var_access
 | Dict of (exp * exp) list
 | List of exp list                      (* Will also include tuples *)
 | Lambda of params_list * (exp)
-| FuncCallVal of func_call       (* Applying arguments *)
-| Paren of exp
 | React of react_component
 
 and com =

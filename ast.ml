@@ -80,8 +80,8 @@ and com =
 | Raise of string
 
 and import =
-| ImportBase of var * string
-| ImportAs of var * string * var
+| ImportBase of var
+| ImportFrom of var * var
 
 and if_com =
 | IfBase of exp * (com list) * (elif_com list)                       (* If-then *)

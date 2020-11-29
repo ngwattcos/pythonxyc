@@ -194,8 +194,8 @@ val_update:
 	| var_access MODULO_EQUALS exp                          { Update($1, ModuloEquals, $3) }
 ;
 
-import: IMPORT VAR FROM STRING                              { ImportBase(snd $2, snd $4) }
-    | IMPORT VAR FROM STRING AS VAR                         { ImportAs(snd $2, snd $4, snd $6) }
+import: IMPORT VAR                                          { ImportBase(snd $2) }
+    | IMPORT VAR FROM VAR                                   { ImportFrom(snd $2, snd $4) }
 ;
 
 while_com: WHILE exp COLON command_seq END                  { While($2, $4) }

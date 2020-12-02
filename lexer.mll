@@ -89,7 +89,7 @@ let linestart = ref (-1)
 let newline lexbuf : unit =
   linestart := Lexing.lexeme_start lexbuf;
   incr lineno;
-  printf "\n";
+  printf "\\n\n";
   ()
 
 let info lexbuf =

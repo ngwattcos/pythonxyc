@@ -55,7 +55,13 @@ program:
 
 var_access: VAR                                             { Var(snd $1) }
     | var_access DOT VAR                                    { Dot($1, snd $3) }
+    | var_access DOT consume_newlines VAR                   { Dot($1, snd $4) }
     | var_access LBRACKET exp RBRACKET                      { Key($1, $3) }
+    | var_access LBRACKET consume_newlines exp RBRACKET     { Key($1, $4) }
+    | var_access LBRACKET exp consume_newlines RBRACKET     { Key($1, $3) }
+    | var_access LBRACKET consume_newlines exp
+        consume_newlines RBRACKET                           { Key($1, $4) }
+    
 ;
 
 dict_entries: exp COLON exp                                 { [($1, $3)] }

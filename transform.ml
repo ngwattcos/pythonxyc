@@ -5,30 +5,13 @@ open List
 
 (* references *)
 let indbuf = ref (Buffer.create 0)
+let buf = ref (Buffer.create 0)
 
-(* translation converts python-specific functions amd library calls *)
+(* transform converts python-specific functions amd library calls *)
 (* to a javascript-friendly format *)
 
-let rec print_p (prog: program) = ()
 
-let rec print_c (c: com) = ()
-
-let rec print_e (c: exp) = ()
-
-(* let rec reverse (lst: 'a list) (acc: 'a list) = match lst with
-| h::tl -> reverse tl (h::acc)
-| [] -> acc
-
-let reverse_list (lst: 'a list) = reverse lst [] *)
-
-(* let translatep (prog: program) = print_p prog; match prog with
-| c::tl -> printf "a command"; ()
-| [] -> printf "end"; ()
-
-let rec translatec (c: com) = print_c c; match c with
-| _ -> () *)
-
-(* Things to fix
+(* Things to transform
  * array slice: arr[0, 3] -> arr.slice(0, 3)
  * 
  * str(exp) -> exp.toString()
@@ -44,236 +27,239 @@ let rec translatec (c: com) = print_c c; match c with
  * for var in range(a, b, c) -> for (const var = a; var < b; var += c) {...}
 
  *)
-let rec transform_e (e: exp) = print_e e; 
-match e with
+let rec transform_e = function
 | Bexp(Aexp(FuncCallVal(Call((Var "len"), [Bexp(Aexp(VarAccess s))])))) -> Bexp(Aexp(VarAccess(Dot(s, "length"))))
 | Bexp(Aexp(FuncCallVal(Call((Var "len"), [List l])))) -> Bexp(Aexp(VarAccess(DotRaw(List l, "length"))))
 (* | Bexp(Aexp(FuncCallVal(Call((Var "len"), [Dict p ])))) -> Bexp(Aexp(VarAccess(DotRaw(Dict p, "length")))) *)
 | e -> e
 
-let rec translate_p (prog: program) (buf: Buffer.t) =
-translate_coms prog buf;
-buf
+let rec translate_p (prog: program) = translate_coms prog
 
-and translate_coms (prog: program) (buf: Buffer.t) = match prog with
+and translate_coms (prog: program) = match prog with
 | [] -> ()
 | c::[] ->
-    Buffer.add_buffer buf !indbuf;
-    translate_c c buf;
-    Buffer.add_string buf "\n"
+    Buffer.add_buffer !buf !indbuf;
+    translate_c c;
+    Buffer.add_string !buf "\n"
 | c::tl ->
-    ignore (translate_coms tl buf);
-    Buffer.add_buffer buf !indbuf;
-    ignore (translate_c c buf);
-    Buffer.add_string buf "\n"
+    ignore (translate_coms tl);
+    Buffer.add_buffer !buf !indbuf;
+    ignore (translate_c c);
+    Buffer.add_string !buf "\n"
 
-and translate_c (c: com) (buf: Buffer.t) = match c with
+and translate_c (c: com) = match c with
 | ValUpdate (val_update) ->
-    translate_val_update val_update buf;
-    Buffer.add_string buf ";"
+    translate_val_update val_update;
+    Buffer.add_string !buf ";"
 | FuncDef (var, params_list, com_list) ->
-    Buffer.add_buffer buf !indbuf;
-    Buffer.add_string buf "const ";
-    translate_var var buf;
-    Buffer.add_string buf " = (";
-    translate_params params_list buf;
-    Buffer.add_string buf ") => {\n";
+    Buffer.add_buffer !buf !indbuf;
+    Buffer.add_string !buf "const ";
+    translate_var var;
+    Buffer.add_string !buf " = (";
+    translate_params params_list;
+    Buffer.add_string !buf ") => {\n";
     Buffer.add_string !indbuf "    ";
-    translate_coms com_list buf;
+    translate_coms com_list;
     Buffer.truncate !indbuf ((Buffer.length !indbuf) - 4);
-    Buffer.add_buffer buf !indbuf;
-    Buffer.add_string buf "}\n"
+    Buffer.add_buffer !buf !indbuf;
+    Buffer.add_string !buf "}\n"
 | FuncCallCom (func) ->
-    translate_func_call func buf;
-    Buffer.add_string buf ";"
+    translate_func_call func;
+    Buffer.add_string !buf ";"
 | ReturnExp (e) ->
-    Buffer.add_string buf "return ";
-    translate_e e buf;
-    Buffer.add_string buf ";"
+    Buffer.add_string !buf "return ";
+    translate_e e;
+    Buffer.add_string !buf ";"
 | Return ->
-    Buffer.add_string buf "return";
-    Buffer.add_string buf ";"
+    Buffer.add_string !buf "return";
+    Buffer.add_string !buf ";"
 | Break ->
-    Buffer.add_string buf "break";
-    Buffer.add_string buf ";"
+    Buffer.add_string !buf "break";
+    Buffer.add_string !buf ";"
 | Continue ->
-    Buffer.add_string buf "continue";
-    Buffer.add_string buf ";"
+    Buffer.add_string !buf "continue";
+    Buffer.add_string !buf ";"
 | _ -> failwith "unimplemented command"
 
-and translate_val_update (c: val_update) (buf: Buffer.t) = match c with
+and translate_val_update (c: val_update) = match c with
 | JLet (var, exp) ->
-    Buffer.add_string buf "let ";
-    translate_var var buf;
-    Buffer.add_string buf " = ";
-    translate_e exp buf
+    Buffer.add_string !buf "let ";
+    translate_var var;
+    Buffer.add_string !buf " = ";
+    translate_e exp
 | JConst (var, exp) ->
-    Buffer.add_string buf "const ";
-    translate_var var buf;
-    Buffer.add_string buf " = ";
-    translate_e exp buf
+    Buffer.add_string !buf "const ";
+    translate_var var;
+    Buffer.add_string !buf " = ";
+    translate_e exp
 | Update (var_access, update_op, exp) ->
-    translate_var_access var_access buf;
-    translate_update_op update_op buf;
-    translate_e exp buf
+    translate_var_access var_access;
+    translate_update_op update_op;
+    translate_e exp
 
-and translate_update_op (op: update_op) (buf: Buffer.t) = match op with
+and translate_update_op (op: update_op) = match op with
 | Equals ->
-    Buffer.add_string buf " = "
+    Buffer.add_string !buf " = "
 | PlusEquals ->
-    Buffer.add_string buf " += "
+    Buffer.add_string !buf " += "
 | MinusEquals ->
-    Buffer.add_string buf " -= "
+    Buffer.add_string !buf " -= "
 | TimesEquals ->
-    Buffer.add_string buf " *= "
+    Buffer.add_string !buf " *= "
 | DivideEquals ->
-    Buffer.add_string buf " /= "
+    Buffer.add_string !buf " /= "
 | ModuloEquals ->
-    Buffer.add_string buf " %= "
+    Buffer.add_string !buf " %= "
 
-and translate_e (exp: exp) (buf: Buffer.t) =
+and translate_e (exp: exp) =
 let e = transform_e exp in match e with
-| Bexp (bexp) -> translate_bexp bexp buf
-| String (str) -> Buffer.add_string buf str
-| NoneExp -> Buffer.add_string buf "null"
+| Bexp (bexp) -> translate_bexp bexp
+| String (str) -> Buffer.add_string !buf str
+| NoneExp -> Buffer.add_string !buf "null"
 | List l -> 
-    Buffer.add_string buf "[";
-    List.iter (fun exp -> translate_e exp buf; Buffer.add_string buf ", ") l;
-    Buffer.add_string buf "]"
+    Buffer.add_string !buf "[";
+    List.iter (fun exp -> translate_e exp;Buffer.add_string !buf ", ") l;
+    Buffer.add_string !buf "]"
 | Dict l ->
-    Buffer.add_string buf "{";
-    List.iter (fun ((e1, e2): exp * exp) -> translate_e e1 buf; Buffer.add_string buf ": "; translate_e e2 buf; Buffer.add_string buf ", ") l;
-    Buffer.add_string buf "}"
+    Buffer.add_string !buf "{";
+    List.iter (fun ((e1, e2): exp * exp) ->
+        translate_e e1;
+        Buffer.add_string !buf ": ";
+        translate_e e2;
+        Buffer.add_string !buf ", ") l;
+    Buffer.add_string !buf "}"
 | _ -> ()
 
-and translate_bexp (e: bexp) (buf: Buffer.t) =
+and translate_bexp (e: bexp) =
 match e with
 | Or (b1, b2) ->
-    translate_bexp b1 buf;
-    Buffer.add_string buf " || ";
-    translate_bexp b2 buf
+    translate_bexp b1;
+    Buffer.add_string !buf " || ";
+    translate_bexp b2
 | And (b1, b2) ->
-    translate_bexp b1 buf;
-    Buffer.add_string buf " && ";
-    translate_bexp b2 buf
+    translate_bexp b1;
+    Buffer.add_string !buf " && ";
+    translate_bexp b2
 | Not (b) ->
-    Buffer.add_string buf " !";
-    translate_bexp b buf;
-    Buffer.add_string buf " "
+    Buffer.add_string !buf " !";
+    translate_bexp b;
+    Buffer.add_string !buf " "
 | Bool (b) ->
-    Buffer.add_string buf (string_of_bool b)
+    Buffer.add_string !buf (string_of_bool b)
 | GT (a1, a2) ->
-    translate_aexp a1 buf;
-    Buffer.add_string buf " > ";
-    translate_aexp a2 buf
+    translate_aexp a1;
+    Buffer.add_string !buf " > ";
+    translate_aexp a2
 | GE (a1, a2) ->
-    translate_aexp a1 buf;
-    Buffer.add_string buf " >= ";
-    translate_aexp a2 buf
+    translate_aexp a1;
+    Buffer.add_string !buf " >= ";
+    translate_aexp a2
 | LT (a1, a2) ->
-    translate_aexp a1 buf;
-    Buffer.add_string buf " < ";
-    translate_aexp a2 buf
+    translate_aexp a1;
+    Buffer.add_string !buf " < ";
+    translate_aexp a2
 | LE (a1, a2) ->
-    translate_aexp a1 buf;
-    Buffer.add_string buf " <= ";
-    translate_aexp a2 buf
+    translate_aexp a1;
+    Buffer.add_string !buf " <= ";
+    translate_aexp a2
 | EQ (a1, a2) ->
-    translate_aexp a1 buf;
-    Buffer.add_string buf " === ";
-    translate_aexp a2 buf
+    translate_aexp a1;
+    Buffer.add_string !buf " === ";
+    translate_aexp a2
 | NE (a1, a2) ->
-    translate_aexp a1 buf;
-    Buffer.add_string buf " !== ";
-    translate_aexp a2 buf
-| Aexp (a) -> translate_aexp a buf
+    translate_aexp a1;
+    Buffer.add_string !buf " !== ";
+    translate_aexp a2
+| Aexp (a) -> translate_aexp a
 
-and translate_aexp (e: aexp) (buf: Buffer.t) =
+and translate_aexp (e: aexp) =
 match e with
-| Int (i) -> Buffer.add_string buf (string_of_int i)
-| Float (f) -> Buffer.add_string buf (string_of_float f)
-| VarAccess (var_access) -> translate_var_access var_access buf
-| FuncCallVal(func_call) -> translate_func_call func_call buf
+| Int (i) -> Buffer.add_string !buf (string_of_int i)
+| Float (f) -> Buffer.add_string !buf (string_of_float f)
+| VarAccess (var_access) -> translate_var_access var_access
+| FuncCallVal(func_call) -> translate_func_call func_call
 | Paren (e) ->
-    Buffer.add_string buf "(";
-    translate_e e buf;
-    Buffer.add_string buf ")"
+    Buffer.add_string !buf "(";
+    translate_e e;
+    Buffer.add_string !buf ")"
 | Expon (a1, a2) -> 
-    translate_aexp a1 buf;
-    Buffer.add_string buf " ** ";
-    translate_aexp a2 buf
+    translate_aexp a1;
+    Buffer.add_string !buf " ** ";
+    translate_aexp a2
 | Times (a1, a2) -> 
-    translate_aexp a1 buf;
-    Buffer.add_string buf " * ";
-    translate_aexp a2 buf
+    translate_aexp a1;
+    Buffer.add_string !buf " * ";
+    translate_aexp a2
 | Div (a1, a2) -> 
-    translate_aexp a1 buf;
-    Buffer.add_string buf " / ";
-    translate_aexp a2 buf
+    translate_aexp a1;
+    Buffer.add_string !buf " / ";
+    translate_aexp a2
 | Plus (a1, a2) ->
-    translate_aexp a1 buf;
-    Buffer.add_string buf " + ";
-    translate_aexp a2 buf
+    translate_aexp a1;
+    Buffer.add_string !buf " + ";
+    translate_aexp a2
 | Minus (a1, a2) ->
-    translate_aexp a1 buf;
-    Buffer.add_string buf " - ";
-    translate_aexp a2 buf
+    translate_aexp a1;
+    Buffer.add_string !buf " - ";
+    translate_aexp a2
 | Mod (a1, a2) ->
-    translate_aexp a1 buf;
-    Buffer.add_string buf " % ";
-    translate_aexp a2 buf
+    translate_aexp a1;
+    Buffer.add_string !buf " % ";
+    translate_aexp a2
 
-and translate_func_call (Call (var_access, args): func_call) (buf: Buffer.t) = 
-    translate_var_access var_access buf;
-    Buffer.add_string buf "(";
-    translate_args args buf;
-    Buffer.add_string buf ")"
+and translate_func_call (Call (var_access, args): func_call) = 
+    translate_var_access var_access;
+    Buffer.add_string !buf "(";
+    translate_args args;
+    Buffer.add_string !buf ")"
 
-and translate_var (v: var) (buf: Buffer.t) = Buffer.add_string buf v
+and translate_var (v: var) = Buffer.add_string !buf v; ()
 
 (* Expands a var_access in  "reversed" (correct) order *)
-and translate_var_access (v: var_access) (buf: Buffer.t) = 
+and translate_var_access (v: var_access) = 
 match v with
-| Var (var) -> translate_var var buf
+| Var (var) -> translate_var var
 | Dot (v1, var) ->
-    translate_var_access v1 buf;
-    Buffer.add_string buf ".";
-    translate_var var buf
+    translate_var_access v1;
+    Buffer.add_string !buf ".";
+    translate_var var
 | Key (v1, exp) ->
-    translate_var_access v1 buf;
-    Buffer.add_string buf "[";
-    translate_e exp buf;
-    Buffer.add_string buf "]"
+    translate_var_access v1;
+    Buffer.add_string !buf "[";
+    translate_e exp;
+    Buffer.add_string !buf "]"
 | DotRaw (e, var) -> 
-    translate_e e buf;
-    Buffer.add_string buf ".";
-    translate_var var buf
+    translate_e e;
+    Buffer.add_string !buf ".";
+    translate_var var
 | KeyRaw (l, e) -> 
-    translate_e (List l) buf;
-    Buffer.add_string buf "[";
-    translate_e e buf;
-    Buffer.add_string buf "]"
+    translate_e (List l);
+    Buffer.add_string !buf "[";
+    translate_e e;
+    Buffer.add_string !buf "]"
 
 (* expands an argument list in "reversed" (correct) order *)
-and translate_args (lst: exp list) (buf: Buffer.t) = match lst with
+and translate_args (lst: exp list) = match lst with
 | [] -> ()
 | arg::[] ->
-    translate_e arg buf
+    translate_e arg
 | arg::tl ->
-    translate_args tl buf;
-    Buffer.add_string buf ", ";
-    translate_e arg buf
+    translate_args tl;
+    Buffer.add_string !buf ", ";
+    translate_e arg
 
 (* expands a parameter list in "reversed" (correct) order *)
-and translate_params (lst: var list) (buf: Buffer.t) = match lst with
+and translate_params (lst: var list) = match lst with
 | [] -> ()
 | param::[] ->
-    translate_var param buf
+    translate_var param
 | param::tl ->
-    translate_params tl buf;
-    Buffer.add_string buf ", ";
-    translate_var param buf
+    translate_params tl;
+    Buffer.add_string !buf ", ";
+    translate_var param
 
 let translate (prog: program) =
 ignore (indbuf :=  Buffer.create 0);
-translate_p prog (Buffer.create 0)
+ignore (buf :=  Buffer.create 0);
+translate_p prog;
+!buf

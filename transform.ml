@@ -30,7 +30,11 @@ let rec translatec (c: com) = print_c c; match c with
 
 (* len(var) -> var.length (does not matter if string or arr) *)
 (* array slice: arr[0, 3] -> arr.slice(0, 3) *)
-let rec translate_e (e: exp) = print_e e; match e with
+let rec translate_e (e: exp) = print_e e; 
+match e with
+| Bexp(Aexp(FuncCallVal(Call((Var "len"), [Bexp(Aexp(VarAccess s))])))) -> Bexp(Aexp(VarAccess(Dot(s, "length"))))
+| Bexp(Aexp(FuncCallVal(Call((Var "len"), [List l])))) -> Bexp(Aexp(VarAccess(DotRaw(List l, "length"))))
+(* | Bexp(Aexp(FuncCallVal(Call((Var "len"), [Dict p ])))) -> Bexp(Aexp(VarAccess(DotRaw(Dict p, "length")))) *)
 | e -> e
 
 let rec transform_p (prog: program) (buf: Buffer.t) =
@@ -83,7 +87,6 @@ and transform_c (c: com) (buf: Buffer.t) = match c with
 | Break ->
     Buffer.add_string buf "break";
     Buffer.add_string buf ";"
-
 | Continue ->
     Buffer.add_string buf "continue";
     Buffer.add_string buf ";"
@@ -211,20 +214,11 @@ match e with
     Buffer.add_string buf " % ";
     transform_aexp a2 buf
 
-and transform_func_call (fc: func_call) (buf: Buffer.t) = 
-match fc with
-| Call (var_access, args) ->
-    begin 
-    match var_access with
-    | Var ("len") -> 
-        transform_args args buf;
-        Buffer.add_string buf ".length";
-    | _ -> 
-        transform_var_access var_access buf;
-        Buffer.add_string buf "(";
-        transform_args args buf;
-        Buffer.add_string buf ")"
-    end 
+and transform_func_call (Call (var_access, args): func_call) (buf: Buffer.t) = 
+    transform_var_access var_access buf;
+    Buffer.add_string buf "(";
+    transform_args args buf;
+    Buffer.add_string buf ")"
 
 and transform_var (v: var) (buf: Buffer.t) = Buffer.add_string buf v
 
@@ -240,6 +234,15 @@ match v with
     transform_var_access v1 buf;
     Buffer.add_string buf "[";
     transform_e exp buf;
+    Buffer.add_string buf "]"
+| DotRaw (e, var) -> 
+    transform_e e buf;
+    Buffer.add_string buf ".";
+    transform_var var buf
+| KeyRaw (l, e) -> 
+    transform_e (List l) buf;
+    Buffer.add_string buf "[";
+    transform_e e buf;
     Buffer.add_string buf "]"
 
 (* expands an argument list in "reversed" (correct) order *)

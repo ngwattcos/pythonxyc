@@ -148,7 +148,7 @@ aexp_primitive:
 ;
 
 react_attribute:
-    | VAR EQUALS STRING                                     { Attrib(snd $1, String(snd $3)) }
+    | VAR EQUALS STRING                                     { Attrib(snd $1, Stringexp(String(snd $3))) }
     | VAR EQUALS LBRACE exp RBRACE                          { Attrib(snd $1, $4) }
 ;
 
@@ -181,7 +181,7 @@ child_component_list:
 
 concatenation:
     | STRING                                                { String(snd $1) }
-    | concatenation PLUS STRING                             { Concat($1, String(snd $3)) }
+    | concatenation PLUS STRING                             { Concat($1, (snd $3)) }
 ;
 
 exp:

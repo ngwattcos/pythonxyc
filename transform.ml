@@ -33,8 +33,6 @@ let rec transform_e = function
 (* | Bexp(Aexp(FuncCallVal(Call((Var "len"), [Dict p ])))) -> Bexp(Aexp(VarAccess(DotRaw(Dict p, "length")))) *)
 | e -> e
 
-let rec translate_p (prog: program) = translate_coms prog
-
 and translate_coms (prog: program) = match prog with
 | [] -> ()
 | c::[] ->

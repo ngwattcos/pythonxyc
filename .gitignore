@@ -3,6 +3,7 @@ Ast
 Grammar
 grammar.mli
 grammar.ml
+grammar.output
 
 Lexer
 lexer.ml

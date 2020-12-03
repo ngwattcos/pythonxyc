@@ -70,10 +70,10 @@ and transform_c (c: com) (buf: Buffer.t) = match c with
     Buffer.add_string buf "\n";
     Buffer.add_string !indbuf "    ";
     transform_coms com_list buf;
-    Buffer.truncate !indbuf 4;
-    Buffer.add_string buf "\n";
+    Buffer.truncate !indbuf ((Buffer.length !indbuf) - 4);
+    (* Buffer.add_string buf "\n"; *)
     Buffer.add_buffer buf !indbuf;
-    Buffer.add_string buf "}";
+    Buffer.add_string buf "}"
 | FuncCallCom (func) ->
     transform_func_call func buf;
     Buffer.add_string buf ";"

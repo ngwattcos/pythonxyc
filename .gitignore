@@ -1,15 +1,2 @@
-Ast
-
-Grammar
-grammar.mli
-grammar.ml
-
-Lexer
-lexer.ml
-
-Transform
-
-*.cmi
-*.cmx
-*.o
-*.mlu
+_build/
+*.byte

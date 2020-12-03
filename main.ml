@@ -2,6 +2,7 @@ open Ast
 open Lexer
 open Grammar
 open Transform
+open Printf
 
 let () =
   let filename = Sys.argv.(1) in
@@ -14,4 +15,4 @@ let () =
         (Lexing.lexeme_end lexbuf - !Lexer.linestart - 1);
       exit 1 in
   let transpiled = Buffer.contents (Transform.transform c) in
-  print_endline transpiled
+  printf "\n\n\n"; print_endline transpiled

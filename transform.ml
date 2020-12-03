@@ -38,20 +38,24 @@ let rec translate_e (e: Ast.exp) = print_e e; match e with
 
 
 let rec transform_p (prog: Ast.program) (buf: Buffer.t) = match prog with
+| [] -> buf
+| c::[] ->
+    transform_c c buf;
+    Buffer.add_string buf ";\n";
+    buf
 | c::tl ->
     ignore (transform_p tl buf);
-    Buffer.add_string buf "\n";
     ignore (transform_c c buf);
+    Buffer.add_string buf ";\n";
     buf
-| [] -> buf
 
-and transform_c (c: Ast.com) (buf: Buffer.t) = print_c c; match c with
+and transform_c (c: Ast.com) (buf: Buffer.t): unit = print_c c; match c with
 | ValUpdate (val_update) -> transform_val_update val_update buf
 | FuncCallCom (func) -> transform_func_call_com func buf
 | Continue -> Buffer.add_string buf "continue"
 | _ -> failwith "unimplemented"
 
-and transform_val_update (c: Ast.val_update) (buf: Buffer.t)= match c with
+and transform_val_update (c: Ast.val_update) (buf: Buffer.t) = match c with
 | JLet (var, exp) ->
     Buffer.add_string buf "let ";
     transform_var var buf;
@@ -70,9 +74,67 @@ match c with
     (transform_var_access var_access buf);
     (transform_args (reverse_list args) buf)
 
-and transform_e (e: Ast.exp) (buf: Buffer.t) =
-let translated = translate_e in match translated with
+and transform_e (exp: Ast.exp) (buf: Buffer.t) =
+let e = translate_e exp in match e with
+| Bexp (bexp) -> transform_bexp bexp buf
 | _ -> ()
+
+and transform_bexp (e: Ast.bexp) (buf: Buffer.t) =
+match e with
+| Or (b1, b2) ->
+    transform_bexp b1 buf;
+    Buffer.add_string buf " || ";
+    transform_bexp b2 buf
+| And (b1, b2) ->
+    transform_bexp b1 buf;
+    Buffer.add_string buf " && ";
+    transform_bexp b2 buf
+| Not (b) ->
+    Buffer.add_string buf " !";
+    transform_bexp b buf;
+    Buffer.add_string buf " "
+| Bool (b) ->
+    Buffer.add_string buf (string_of_bool b)
+| GT (a1, a2) ->
+    transform_aexp a1 buf;
+    Buffer.add_string buf " > ";
+    transform_aexp a2 buf
+| GE (a1, a2) ->
+    transform_aexp a1 buf;
+    Buffer.add_string buf " >= ";
+    transform_aexp a2 buf
+| LT (a1, a2) ->
+    transform_aexp a1 buf;
+    Buffer.add_string buf " < ";
+    transform_aexp a2 buf
+| LE (a1, a2) ->
+    transform_aexp a1 buf;
+    Buffer.add_string buf " <= ";
+    transform_aexp a2 buf
+| EQ (a1, a2) ->
+    transform_aexp a1 buf;
+    Buffer.add_string buf " === ";
+    transform_aexp a2 buf
+| NE (a1, a2) ->
+    transform_aexp a1 buf;
+    Buffer.add_string buf " !== ";
+    transform_aexp a2 buf
+| Aexp (a) -> transform_aexp a buf
+
+and transform_aexp (e: Ast.aexp) (buf: Buffer.t) =
+match e with
+| Int (i) -> Buffer.add_string buf (string_of_int i)
+| Float (f) -> failwith "unimplemented"
+| VarAccess (var_access) -> failwith "unimplemented"
+| FuncCallVal(func_call) -> failwith "unimplemented"
+| Paren (e) -> failwith "unimplemented"
+| Expon (a1, a2) -> failwith "unimplemented"
+| Neg (a) -> failwith "unimplemented"
+| Times (a1, a2) -> failwith "unimplemented"
+| Div (a1, a2) -> failwith "unimplemented"
+| Plus (a1, a2) -> failwith "unimplemented"
+| Minus (a1, a2) -> failwith "unimplemented"
+| Mod (a1, a2) -> failwith "unimplemented"
 
 and transform_var (v: Ast.var) (buf: Buffer.t) = Buffer.add_string buf v
 

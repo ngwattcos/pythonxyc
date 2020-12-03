@@ -34,7 +34,7 @@ let rec translate_e (e: exp) = print_e e;
 match e with
 | Bexp(Aexp(FuncCallVal(Call((Var "len"), [Bexp(Aexp(VarAccess s))])))) -> Bexp(Aexp(VarAccess(Dot(s, "length"))))
 | Bexp(Aexp(FuncCallVal(Call((Var "len"), [List l])))) -> Bexp(Aexp(VarAccess(DotRaw(List l, "length"))))
-(* | Bexp(Aexp(FuncCallVal(Call((Var "len"), [])))) *)
+(* | Bexp(Aexp(FuncCallVal(Call((Var "len"), [Dict p ])))) -> Bexp(Aexp(VarAccess(DotRaw(Dict p, "length")))) *)
 | e -> e
 
 let rec transform_p (prog: program) (buf: Buffer.t) =

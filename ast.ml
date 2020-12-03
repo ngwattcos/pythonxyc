@@ -9,7 +9,6 @@ type aexp =
 | FuncCallVal of func_call
 | Paren of exp
 | Expon of aexp * aexp
-| Neg of aexp
 | Times of aexp * aexp
 | Div of aexp * aexp
 | Plus of aexp * aexp
@@ -103,7 +102,7 @@ and val_update =
 | JConst of var * exp
 | Update of var_access * update_op * exp
 
-and params_list = Params of var list
+and params_list = var list
 
 and args_list = exp list
 

@@ -185,7 +185,7 @@ exp:
     | dict                                                  { $1 }
     | list                                                  { $1 }
     | bexp                                                  { Bexp($1) }
-    | LAMBDA function_parameters COLON exp                  { Lambda(Params($2), $4) }
+    | LAMBDA function_parameters COLON exp                  { Lambda($2, $4) }
     | react_component                                       { React($1) }
 ;
 
@@ -209,6 +209,7 @@ while_com: WHILE exp COLON command_seq END                  { While($2, $4) }
 
 function_parameters: VAR                                    { [snd $1] }
     | function_parameters COMMA VAR                         { (snd $3)::$1 }
+    | function_parameters COMMA consume_newlines VAR        { (snd $4)::$1 }
 ;
 
 function_arguments: exp                                     { [$1] }
@@ -221,6 +222,45 @@ function_call_val: var_access LPAREN RPAREN                 { Call($1, []) }
 
 function_call_com: var_access LPAREN RPAREN                 { Call($1, []) }
     | var_access LPAREN function_arguments RPAREN           { Call($1, $3) }
+;
+
+function_definition:
+    | DEF VAR LPAREN RPAREN COLON
+        command_seq consume_newlines END                    { FuncDef(snd $2, [], $6) }
+    | DEF VAR LPAREN function_parameters RPAREN COLON
+        command_seq consume_newlines END                    { FuncDef(snd $2, $4, $7) }
+    | DEF VAR LPAREN
+        consume_newlines
+        function_parameters RPAREN COLON
+        command_seq consume_newlines END                    { FuncDef(snd $2, $5, $8) }
+    | DEF VAR LPAREN
+        function_parameters consume_newlines RPAREN COLON
+        command_seq consume_newlines END                    { FuncDef(snd $2, $4, $8) }
+    | DEF VAR LPAREN
+        consume_newlines
+        function_parameters consume_newlines RPAREN COLON
+        command_seq consume_newlines END                    { FuncDef(snd $2, $5, $9) }
+
+    | DEF VAR LPAREN RPAREN COLON
+        consume_newlines
+        command_seq consume_newlines END                    { FuncDef(snd $2, [], $7) }
+    | DEF VAR LPAREN function_parameters RPAREN COLON
+        consume_newlines
+        command_seq consume_newlines END                    { FuncDef(snd $2, $4, $8) }
+    | DEF VAR LPAREN
+        consume_newlines
+        function_parameters RPAREN COLON
+        consume_newlines
+        command_seq consume_newlines END                    { FuncDef(snd $2, $5, $9) }
+    | DEF VAR LPAREN
+        function_parameters consume_newlines RPAREN COLON
+        consume_newlines
+        command_seq consume_newlines END                    { FuncDef(snd $2, $4, $9) }
+    | DEF VAR LPAREN
+        consume_newlines
+        function_parameters consume_newlines RPAREN COLON
+        consume_newlines
+        command_seq consume_newlines END                    { FuncDef(snd $2, $5, $10) }
 ;
 
 for_com: FOR VAR IN
@@ -243,9 +283,8 @@ command:
     | while_com                                             { $1 }
     | for_com                                               { For($1) }
     | if_com                                                { If($1) }
+    | function_definition                                   { $1 }
     | function_call_com                                     { FuncCallCom($1) }
-    | DEF VAR LPAREN function_parameters RPAREN COLON
-        command_seq END                                     { FuncDef(snd $2, Params($4), $7) }
     | RETURN exp                                            { ReturnExp($2) }
     | RETURN                                                { Return }
     | BREAK                                                 { Break }

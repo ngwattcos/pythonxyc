@@ -151,7 +151,13 @@ let _none_ = "None"
 let _true_ = "True"
 let _false_ = "False"
 
-let _string_ = '\"'(_[^'\"'])*'\"'
+(*let _string_ = '\"'(_[^'\"'])*'\"'*)
+
+let _anything_ = ['a'-'z' 'A' - 'Z' '0' - '9' '!' '@' '#' '$' '%' '^' '&' '*'
+'(' ')' '[' ']' '-' '_' '=' '+' '{' '}' '|' '\\' ';' ''' ':'
+ ',' '.' '/' '<' '>' '?' '`' '~' ' ' '\t' '\n']
+
+let _string_ = "\""_anything_*"\""
 
 let _digit_ = ['0'-'9']
 (* let _int_ = ['1'-'9']*['0'-'9'] *)
@@ -266,7 +272,6 @@ rule token = parse
 | _none_ { printf "NONE "; NONE(info lexbuf) }
 | _true_ { printf "(TRUE) "; BOOL(info lexbuf, true) }
 | _false_ { printf "(FALSE) "; BOOL((info lexbuf), false) }
-| _string_ as str {printf "\"%s\" " str;  STRING((info lexbuf), str) }
 | _int_ as n { printf "int(%s) " n; INT((info lexbuf), int_of_string n) }
 | _float_ as n { printf "float(%s) " n; FLOAT((info lexbuf), float_of_string n) }
 | _equals_ { printf "(=) "; EQUALS(info lexbuf) }
@@ -326,6 +331,7 @@ rule token = parse
 | _jlet_ { printf "LET "; JLET(info lexbuf) }
 | _var_ as var { printf "var(%s) " var; VAR((info lexbuf), var)}
 | eof { print_endline "\nEOF"; EOF }
+| _string_ as str {printf "\"%s\" " str;  STRING((info lexbuf), str) }
 | _ as c { error lexbuf (String.make 1 c) }
 
 (*and parse_single_quote = parse

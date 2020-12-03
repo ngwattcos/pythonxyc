@@ -33,7 +33,6 @@ ast:
 
 clean:
 	rm *.cmi *.cmx *.o *.mli Grammar Lexer Transform Ast main grammar.ml lexer.ml
-	rm parser_test
 
 clean-grammar:
 	rm grammar

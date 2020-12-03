@@ -215,17 +215,17 @@ function_arguments: exp                                     { [$1] }
     | function_arguments COMMA exp                          { $3::$1 }
 ;
 
-function_call_val: var_access LPAREN RPAREN                 { Call($1, Args([])) }
-    | var_access LPAREN function_arguments RPAREN           { Call($1, Args($3)) }
+function_call_val: var_access LPAREN RPAREN                 { Call($1, []) }
+    | var_access LPAREN function_arguments RPAREN           { Call($1, $3) }
 ;
 
-function_call_com: var_access LPAREN RPAREN                 { Call($1, Args([])) }
-    | var_access LPAREN function_arguments RPAREN           { Call($1, Args($3)) }
+function_call_com: var_access LPAREN RPAREN                 { Call($1, []) }
+    | var_access LPAREN function_arguments RPAREN           { Call($1, $3) }
 ;
 
 for_com: FOR VAR IN
     VAR LPAREN function_arguments RPAREN
-    COLON command_seq END                           { ForFunc(snd $2, (snd $4, Args($6)), $9) }
+    COLON command_seq END                           { ForFunc(snd $2, (snd $4, $6), $9) }
     | FOR VAR IN VAR COLON command_seq END          { ForIterVar(snd $2, snd $4, $6) }
 ;
 

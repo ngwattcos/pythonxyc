@@ -13,5 +13,5 @@ let () =
         !Lexer.lineno
         (Lexing.lexeme_end lexbuf - !Lexer.linestart - 1);
       exit 1 in
-  (*   ignore (Eval.evalc (Eval.make_configuration c)) *)
-  ignore (Transform.transform c)
+  let transpiled = Buffer.contents (Transform.transform c) in
+  print_endline transpiled

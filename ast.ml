@@ -105,6 +105,6 @@ and val_update =
 
 and params_list = Params of var list
 
-and args_list = Args of exp list
+and args_list = exp list
 
 and program = com list

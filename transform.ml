@@ -30,12 +30,22 @@ let rec translatec (c: com) = print_c c; match c with
 
 (* len(var) -> var.length (does not matter if string or arr) *)
 (* array slice: arr[0, 3] -> arr.slice(0, 3) *)
-let rec translate_e (e: exp) = print_e e; match e with
+let rec translate_e (e: exp) = print_e e; 
+match e with
+| Bexp(Aexp(FuncCallVal(Call((Var "len"), [Bexp(Aexp(VarAccess s))])))) -> Bexp(Aexp(FuncCallVal(Call(Dot(s, "length"), []))))
 | e -> e
 
 let rec transform_p (prog: program) (buf: Buffer.t) =
 transform_coms prog buf;
 buf
+
+(* len(arr) -> arr.length()
+len([0, 0]) -> [0, 0].length() *)
+(* FuncCall(Dot(Var("len"), Var("length"))) 
+len(a, b) -> 
+
+[Ast.Bexp (Ast.Aexp (Ast.VarAccess (Ast.Var "arr")))]
+*)
 
 and transform_coms (prog: program) (buf: Buffer.t) = match prog with
 | [] -> ()
@@ -211,20 +221,11 @@ match e with
     Buffer.add_string buf " % ";
     transform_aexp a2 buf
 
-and transform_func_call (fc: func_call) (buf: Buffer.t) = 
-match fc with
-| Call (var_access, args) ->
-    begin 
-    match var_access with
-    | Var ("len") -> 
-        transform_args args buf;
-        Buffer.add_string buf ".length";
-    | _ -> 
-        transform_var_access var_access buf;
-        Buffer.add_string buf "(";
-        transform_args args buf;
-        Buffer.add_string buf ")"
-    end 
+and transform_func_call (Call (var_access, args): func_call) (buf: Buffer.t) = 
+    transform_var_access var_access buf;
+    Buffer.add_string buf "(";
+    transform_args args buf;
+    Buffer.add_string buf ")"
 
 and transform_var (v: var) (buf: Buffer.t) = Buffer.add_string buf v
 

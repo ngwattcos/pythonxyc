@@ -15,6 +15,9 @@ all: build
 clean:
 	ocamlbuild -clean
 
+play: build
+	utop
+
 test:
 	$(OCAMLBUILD) -tag 'debug' $(TEST)
 	./test.byte

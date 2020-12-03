@@ -87,7 +87,6 @@ and transform_c (c: com) (buf: Buffer.t) = match c with
 | Break ->
     Buffer.add_string buf "break";
     Buffer.add_string buf ";"
-
 | Continue ->
     Buffer.add_string buf "continue";
     Buffer.add_string buf ";"

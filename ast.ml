@@ -41,7 +41,9 @@ and func_call = Call of (var_access * args_list)
 and var = string
 
 and var_access = Var of var
+| DotRaw of exp * var
 | Dot of var_access * var
+| KeyRaw of (exp list) * exp
 | Key of var_access * exp
 
 and react_open = ReactOpen of string * (react_attribute list)

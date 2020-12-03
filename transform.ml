@@ -32,20 +32,14 @@ let rec translatec (c: com) = print_c c; match c with
 (* array slice: arr[0, 3] -> arr.slice(0, 3) *)
 let rec translate_e (e: exp) = print_e e; 
 match e with
-| Bexp(Aexp(FuncCallVal(Call((Var "len"), [Bexp(Aexp(VarAccess s))])))) -> Bexp(Aexp(FuncCallVal(Call(Dot(s, "length"), []))))
+| Bexp(Aexp(FuncCallVal(Call((Var "len"), [Bexp(Aexp(VarAccess s))])))) -> Bexp(Aexp(VarAccess(Dot(s, "length"))))
+| Bexp(Aexp(FuncCallVal(Call((Var "len"), [List l])))) -> Bexp(Aexp(VarAccess(DotRaw(List l, "length"))))
+(* | Bexp(Aexp(FuncCallVal(Call((Var "len"), [])))) *)
 | e -> e
 
 let rec transform_p (prog: program) (buf: Buffer.t) =
 transform_coms prog buf;
 buf
-
-(* len(arr) -> arr.length()
-len([0, 0]) -> [0, 0].length() *)
-(* FuncCall(Dot(Var("len"), Var("length"))) 
-len(a, b) -> 
-
-[Ast.Bexp (Ast.Aexp (Ast.VarAccess (Ast.Var "arr")))]
-*)
 
 and transform_coms (prog: program) (buf: Buffer.t) = match prog with
 | [] -> ()
@@ -241,6 +235,15 @@ match v with
     transform_var_access v1 buf;
     Buffer.add_string buf "[";
     transform_e exp buf;
+    Buffer.add_string buf "]"
+| DotRaw (e, var) -> 
+    transform_e e buf;
+    Buffer.add_string buf ".";
+    transform_var var buf
+| KeyRaw (l, e) -> 
+    transform_e (List l) buf;
+    Buffer.add_string buf "[";
+    transform_e e buf;
     Buffer.add_string buf "]"
 
 (* expands an argument list in "reversed" (correct) order *)

@@ -7,7 +7,7 @@ OCAMLBUILD=ocamlbuild -use-ocamlfind
 
 default: build
 
-build:
+build: clean
 	$(OCAMLBUILD) $(OBJECTS)
 
 all: build
@@ -22,5 +22,5 @@ test:
 	$(OCAMLBUILD) -tag 'debug' $(TEST)
 	./test.byte
 
-run:
+run: clean
 	$(OCAMLBUILD) $(RUN)

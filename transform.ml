@@ -33,6 +33,10 @@ let rec transform_e = function
 (* | Bexp(Aexp(FuncCallVal(Call((Var "len"), [Dict p ])))) -> Bexp(Aexp(VarAccess(DotRaw(Dict p, "length")))) *)
 | e -> e
 
+let rec transform_c = function
+| FuncCallCom(Call(Var("print"), l)) -> FuncCallCom(Call(Var("console.log"), l)) 
+| c -> c
+
 and translate_coms (prog: program) = match prog with
 | [] -> ()
 | c::[] ->
@@ -45,7 +49,8 @@ and translate_coms (prog: program) = match prog with
     ignore (translate_c c);
     Buffer.add_string !buf "\n"
 
-and translate_c (c: com) = match c with
+and translate_c (c: com) = 
+match transform_c c with
 | ValUpdate (val_update) ->
     translate_val_update val_update;
     Buffer.add_string !buf ";"
@@ -259,5 +264,5 @@ and translate_params (lst: var list) = match lst with
 let translate (prog: program) =
 ignore (indbuf :=  Buffer.create 0);
 ignore (buf :=  Buffer.create 0);
-translate_p prog;
+translate_coms prog;
 !buf

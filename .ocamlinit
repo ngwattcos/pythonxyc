@@ -1,0 +1,4 @@
+#directory "_build";;
+#load "grammar.cmo";;
+#load "lexer.cmo";;
+#use "utop.ml";;

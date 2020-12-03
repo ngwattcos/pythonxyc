@@ -56,10 +56,14 @@ and react_component =
 
 and react_attribute = Attrib of string * exp
 
+and concat =
+| String of string
+| Concat of concat * string
+
 and exp =
 | NoneExp
 | Bexp of bexp
-| String of string
+| Stringexp of concat
 | Dict of (exp * exp) list
 | List of exp list                      (* Will also include tuples *)
 | Lambda of params_list * (exp)

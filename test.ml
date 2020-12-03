@@ -14,7 +14,6 @@ let parse_program (filename:string) =
 let empty_list = []
 let list_a = [1;2;3]
 
-
 let test_fun _ =
   let ast = parse_program "tests/parser/parse00.pyx" in
   assert_equal 1 1

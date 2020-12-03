@@ -14,5 +14,5 @@ let () =
         !Lexer.lineno
         (Lexing.lexeme_end lexbuf - !Lexer.linestart - 1);
       exit 1 in
-  let transpiled = Buffer.contents (Transform.transform c) in
+  let transpiled = Buffer.contents (Transform.translate c) in
   printf "\n\n\n"; print_endline transpiled

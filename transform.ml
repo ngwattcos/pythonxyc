@@ -112,7 +112,7 @@ and translate_update_op (op: update_op) = match op with
 and translate_e (exp: exp) =
 let e = transform_e exp in match e with
 | Bexp (bexp) -> translate_bexp bexp
-| String (str) -> Buffer.add_string !buf str
+| Stringexp (strexp) -> translate_stringexp strexp
 | NoneExp -> Buffer.add_string !buf "null"
 | List l -> 
     Buffer.add_string !buf "[";
@@ -127,6 +127,13 @@ let e = transform_e exp in match e with
         Buffer.add_string !buf ", ") l;
     Buffer.add_string !buf "}"
 | _ -> ()
+
+and translate_stringexp (e: concat) = match e with
+| String (str) -> Buffer.add_string !buf str
+| Concat (concat, str) ->
+    translate_stringexp concat;
+    Buffer.add_string !buf " + ";
+    Buffer.add_string !buf str
 
 and translate_bexp (e: bexp) =
 match e with

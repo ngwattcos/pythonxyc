@@ -179,9 +179,14 @@ child_component_list:
     | child_component_list react_component                  { $2::$1 }
 ;
 
+concatenation:
+    | STRING                                                { String(snd $1) }
+    | concatenation PLUS STRING                             { Concat($1, String(snd $3)) }
+;
+
 exp:
     | NONE                                                  { NoneExp }
-    | STRING                                                { String(snd $1) }
+    | concatenation                                         { Stringexp($1) }
     | dict                                                  { $1 }
     | list                                                  { $1 }
     | bexp                                                  { Bexp($1) }

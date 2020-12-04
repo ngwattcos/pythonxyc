@@ -14,7 +14,7 @@ let buf = ref (Buffer.create 0)
 (* Things to transform
  * array slice: arr[0, 3] -> arr.slice(0, 3)
  * 
- * str(exp) -> exp.toString()
+ * str(exp) -> String(exp)
  * print(exp) -> console.log(exp)
  * import statements
 

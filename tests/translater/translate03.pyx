@@ -1,4 +1,4 @@
-# tests string values
+# String values
 @let str1 = "abc"
 
 @let str2 = 0
@@ -16,4 +16,3 @@
 
 @let a = str(var)
 @let a = str(1 + 2)
-

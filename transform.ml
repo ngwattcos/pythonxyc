@@ -7,6 +7,9 @@ open List
 let indbuf = ref (Buffer.create 0)
 let buf = ref (Buffer.create 0)
 
+
+let undent buffer = ((Buffer.length buffer) - 4)
+
 (* Re-arranging Python AST expressions to a JavaScript-like format *)
 
 (* Things left to transform
@@ -81,7 +84,7 @@ match transform_c c with
     Buffer.add_string !buf ") => {\n";
     Buffer.add_string !indbuf "    ";
     translate_coms com_list;
-    Buffer.truncate !indbuf ((Buffer.length !indbuf) - 4);
+    Buffer.truncate !indbuf (undent !indbuf);
     Buffer.add_buffer !buf !indbuf;
     Buffer.add_string !buf "}\n"
 | FuncCallCom (func) ->
@@ -259,11 +262,16 @@ match v with
     Buffer.add_string !buf "]"
 | Dict l ->
     Buffer.add_string !buf "{";
+    Buffer.add_string !indbuf "    ";
+    if l = [] then () else
+    Buffer.add_string !buf "\n";
     List.iter (fun ((e1, e2): exp * exp) ->
+        Buffer.add_buffer !buf !indbuf;
         translate_e e1;
         Buffer.add_string !buf ": ";
         translate_e e2;
-        Buffer.add_string !buf ", ") l;
+        Buffer.add_string !buf ",\n") l;
+    Buffer.truncate !indbuf (undent !indbuf);
     Buffer.add_string !buf "}"
 | FuncCallVal(func_call) -> translate_func_call func_call
 | Slice (v1, e1, e2) -> failwith "unreachable?"

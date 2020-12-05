@@ -69,10 +69,16 @@ var_access: VAR                                             { Var(snd $1) }
 
 dict_entries: exp COLON exp                                 { [($1, $3)] }
     | dict_entries COMMA exp COLON exp                      { ($3, $5)::$1 }
+    | dict_entries COMMA
+        consume_newlines exp COLON exp                      { ($4, $6)::$1 }
 ;
 
 dict: LBRACE RBRACE                                         { Dict([]) }
     | LBRACE dict_entries RBRACE                            { Dict($2) }
+    | LBRACE consume_newlines dict_entries RBRACE           { Dict($3) }
+    | LBRACE dict_entries consume_newlines RBRACE           { Dict($2) }
+    | LBRACE consume_newlines dict_entries
+        consume_newlines RBRACE                             { Dict($3) }
 ;
 
 list_items: exp                                             { [$1] }

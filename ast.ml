@@ -6,7 +6,6 @@ type aexp =
 | Int of int
 | Float of float
 | VarAccess of var_access
-| FuncCallVal of func_call
 | Paren of exp
 | Expon of aexp * aexp
 | Times of aexp * aexp
@@ -36,16 +35,18 @@ and update_op =
 | DivideEquals
 | ModuloEquals
 
-and func_call = Call of (var_access * args_list)
 
 and var = string
 
 and var_access = Var of var
-| DotRaw of exp * var
+| Dict of (exp * exp) list
+| List of exp list                      (* Will also include tuples *)
 | Dot of var_access * var
-| KeyRaw of (exp list) * exp
 | Key of var_access * exp
 | Slice of var_access * exp * exp
+| FuncCallVal of func_call
+
+and func_call = Call of (var_access * args_list)
 
 and react_open = ReactOpen of string * (react_attribute list)
 
@@ -65,8 +66,6 @@ and exp =
 | NoneExp
 | Bexp of bexp
 | Stringexp of concat
-| Dict of (exp * exp) list
-| List of exp list                      (* Will also include tuples *)
 | Lambda of params_list * (exp)
 | React of react_component
 

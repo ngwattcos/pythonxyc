@@ -7,17 +7,33 @@ open List
 let indbuf = ref (Buffer.create 0)
 let buf = ref (Buffer.create 0)
 
-(* transform converts python-specific functions amd library calls *)
-(* to a javascript-friendly format *)
+(* Re-arranging Python AST expressions to a JavaScript-like format *)
 
-
-(* Things to transform
- * array slice: arr[0, 3] -> arr.slice(0, 3)
+(* Things left to transform
  * 
- * str(exp) -> String(exp)
- * print(exp) -> console.log(exp)
- * import statements
 
+ *)
+let rec transform_e = function
+| Bexp(Aexp(VarAccess(v))) -> Bexp(Aexp(VarAccess(tranform_var_access v)))
+| e -> e
+
+and tranform_var_access = function
+(* handles len(var), len([]) *)
+| FuncCallVal(Call((Var "len"), [Bexp(Aexp(VarAccess s))])) -> Dot(s, "length")
+(* handles str(exp) -> String(exp) *)
+| FuncCallVal(Call((Var "str"), [e])) -> FuncCallVal(Call((Var "String"), [e]))
+(* recursively transform array slices *)
+| Slice (v1, e1, e2) ->
+    let v = tranform_var_access (v1) in
+    FuncCallVal(Call(Dot(v, "slice"), [e2; e1]))
+| v -> v
+
+
+(* Re-arranging Python AST commands to a JavaScript-like format *)
+(* Things to transform
+* print(exp) -> console.log(exp)
+* print() -> console.log()
+ * import commands
 
  * for key in dict.keys() -> const key in dictionary
 
@@ -27,22 +43,14 @@ let buf = ref (Buffer.create 0)
  * for var in range(a, b, c) -> for (const var = a; var < b; var += c) {...}
 
  *)
-let rec transform_e = function
-| Bexp(Aexp(FuncCallVal(Call((Var "len"), [Bexp(Aexp(VarAccess s))])))) ->
-    Bexp(Aexp(VarAccess(Dot(s, "length"))))
-| Bexp(Aexp(FuncCallVal(Call((Var "len"), [List l])))) ->
-    Bexp(Aexp(VarAccess(DotRaw(List l, "length"))))
-(* Array Slice *)
-| Bexp(Aexp(VarAccess(Slice (v1, e1, e2)))) ->
-    Bexp(Aexp(FuncCallVal(Call(Dot(v1, "slice"), [e2; e1]))))
-(* | Bexp(Aexp(FuncCallVal(Call((Var "len"), [Dict p ])))) -> Bexp(Aexp(VarAccess(DotRaw(Dict p, "length")))) *)
-| e -> e
-
 let rec transform_c = function
 | FuncCallCom(Call(Var("print"), l)) -> FuncCallCom(Call(Var("console.log"), l)) 
 | c -> c
 
-and translate_coms (prog: program) = match prog with
+
+(* Translations from Python AST to JavaScript/JSX. *)
+
+let rec translate_coms (prog: program) = match prog with
 | [] -> ()
 | c::[] ->
     Buffer.add_buffer !buf !indbuf;
@@ -124,18 +132,6 @@ let e = transform_e exp in match e with
 | Bexp (bexp) -> translate_bexp bexp
 | Stringexp (strexp) -> translate_stringexp strexp
 | NoneExp -> Buffer.add_string !buf "null"
-| List l -> 
-    Buffer.add_string !buf "[";
-    List.iter (fun exp -> translate_e exp;Buffer.add_string !buf ", ") l;
-    Buffer.add_string !buf "]"
-| Dict l ->
-    Buffer.add_string !buf "{";
-    List.iter (fun ((e1, e2): exp * exp) ->
-        translate_e e1;
-        Buffer.add_string !buf ": ";
-        translate_e e2;
-        Buffer.add_string !buf ", ") l;
-    Buffer.add_string !buf "}"
 | _ -> ()
 
 and translate_stringexp (e: concat) = match e with
@@ -192,7 +188,6 @@ match e with
 | Int (i) -> Buffer.add_string !buf (string_of_int i)
 | Float (f) -> Buffer.add_string !buf (string_of_float f)
 | VarAccess (var_access) -> translate_var_access var_access
-| FuncCallVal(func_call) -> translate_func_call func_call
 | Paren (e) ->
     Buffer.add_string !buf "(";
     translate_e e;
@@ -243,15 +238,19 @@ match v with
     Buffer.add_string !buf "[";
     translate_e exp;
     Buffer.add_string !buf "]"
-| DotRaw (e, var) -> 
-    translate_e e;
-    Buffer.add_string !buf ".";
-    translate_var var
-| KeyRaw (l, e) -> 
-    translate_e (List l);
+| List l -> 
     Buffer.add_string !buf "[";
-    translate_e e;
+    List.iter (fun exp -> translate_e exp;Buffer.add_string !buf ", ") l;
     Buffer.add_string !buf "]"
+| Dict l ->
+    Buffer.add_string !buf "{";
+    List.iter (fun ((e1, e2): exp * exp) ->
+        translate_e e1;
+        Buffer.add_string !buf ": ";
+        translate_e e2;
+        Buffer.add_string !buf ", ") l;
+    Buffer.add_string !buf "}"
+| FuncCallVal(func_call) -> translate_func_call func_call
 | Slice (v1, e1, e2) -> failwith "unreachable?"
 
 (* expands an argument list in "reversed" (correct) order *)

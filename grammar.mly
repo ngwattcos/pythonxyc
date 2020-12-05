@@ -54,6 +54,8 @@ program:
 ;
 
 var_access: VAR                                             { Var(snd $1) }
+    | dict                                                  { $1 }
+    | list                                                  { $1 }
     | var_access DOT VAR                                    { Dot($1, snd $3) }
     | var_access DOT consume_newlines VAR                   { Dot($1, snd $4) }
     | var_access LBRACKET exp RBRACKET                      { Key($1, $3) }
@@ -62,7 +64,7 @@ var_access: VAR                                             { Var(snd $1) }
     | var_access LBRACKET consume_newlines exp
         consume_newlines RBRACKET                           { Key($1, $4) }
     | var_access LBRACKET exp COLON exp RBRACKET            { Slice($1, $3, $5) }
-    
+    | function_call_val                                     { FuncCallVal($1) }
 ;
 
 dict_entries: exp COLON exp                                 { [($1, $3)] }
@@ -144,7 +146,6 @@ aexp_primitive:
     | INT                                                   { Int(snd $1) }
     | FLOAT                                                 { Float(snd $1) }
     | var_access                                            { VarAccess($1) }
-    | function_call_val                                     { FuncCallVal($1) }
     | LPAREN exp RPAREN                                     { Paren($2) }
 ;
 
@@ -188,8 +189,6 @@ concatenation:
 exp:
     | NONE                                                  { NoneExp }
     | concatenation                                         { Stringexp($1) }
-    | dict                                                  { $1 }
-    | list                                                  { $1 }
     | bexp                                                  { Bexp($1) }
     | LAMBDA function_parameters COLON exp                  { Lambda($2, $4) }
     | react_component                                       { React($1) }

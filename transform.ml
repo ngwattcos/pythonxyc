@@ -28,8 +28,13 @@ let buf = ref (Buffer.create 0)
 
  *)
 let rec transform_e = function
-| Bexp(Aexp(FuncCallVal(Call((Var "len"), [Bexp(Aexp(VarAccess s))])))) -> Bexp(Aexp(VarAccess(Dot(s, "length"))))
-| Bexp(Aexp(FuncCallVal(Call((Var "len"), [List l])))) -> Bexp(Aexp(VarAccess(DotRaw(List l, "length"))))
+| Bexp(Aexp(FuncCallVal(Call((Var "len"), [Bexp(Aexp(VarAccess s))])))) ->
+    Bexp(Aexp(VarAccess(Dot(s, "length"))))
+| Bexp(Aexp(FuncCallVal(Call((Var "len"), [List l])))) ->
+    Bexp(Aexp(VarAccess(DotRaw(List l, "length"))))
+(* Array Slice *)
+| Bexp(Aexp(VarAccess(Slice (v1, e1, e2)))) ->
+    Bexp(Aexp(FuncCallVal(Call(Dot(v1, "slice"), [e2; e1]))))
 (* | Bexp(Aexp(FuncCallVal(Call((Var "len"), [Dict p ])))) -> Bexp(Aexp(VarAccess(DotRaw(Dict p, "length")))) *)
 | e -> e
 
@@ -247,6 +252,7 @@ match v with
     Buffer.add_string !buf "[";
     translate_e e;
     Buffer.add_string !buf "]"
+| Slice (v1, e1, e2) -> failwith "unreachable?"
 
 (* expands an argument list in "reversed" (correct) order *)
 and translate_args (lst: exp list) = match lst with

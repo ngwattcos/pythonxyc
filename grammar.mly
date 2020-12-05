@@ -61,6 +61,7 @@ var_access: VAR                                             { Var(snd $1) }
     | var_access LBRACKET exp consume_newlines RBRACKET     { Key($1, $3) }
     | var_access LBRACKET consume_newlines exp
         consume_newlines RBRACKET                           { Key($1, $4) }
+    | var_access LBRACKET exp COLON exp RBRACKET            { Slice($1, $3, $5) }
     
 ;
 
@@ -268,10 +269,8 @@ function_definition:
         command_seq consume_newlines END                    { FuncDef(snd $2, $5, $10) }
 ;
 
-for_com: FOR VAR IN
-    VAR LPAREN function_arguments RPAREN
-    COLON command_seq END                           { ForFunc(snd $2, (snd $4, $6), $9) }
-    | FOR VAR IN VAR COLON command_seq END          { ForIterVar(snd $2, snd $4, $6) }
+for_com:
+    | FOR VAR IN exp COLON command_seq END          { ForIterExp(snd $2, $4, $6) }
 ;
 
 if_com: IF exp COLON command_seq END                       { IfBase($2, $4, []) }

@@ -45,6 +45,7 @@ and var_access = Var of var
 | Dot of var_access * var
 | KeyRaw of (exp list) * exp
 | Key of var_access * exp
+| Slice of var_access * exp * exp
 
 and react_open = ReactOpen of string * (react_attribute list)
 
@@ -100,7 +101,7 @@ and elif_com =
 (* for i in [0, 1, 2, 3] *)
 and for_com =
 | ForFunc of var * (var * args_list) * (com list)
-| ForIterVar of var * var * (com list)
+| ForIterExp of var * exp * (com list)
 (* | ForIter of var * (exp list) *)
 
 and val_update =

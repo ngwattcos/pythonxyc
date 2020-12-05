@@ -1,4 +1,4 @@
-# function definitions
+# function definitions and lambdas
 
 # first function: no params
 def fun1():
@@ -28,3 +28,5 @@ def fun4():
 def fun5():
     return
 @end
+
+@let add = lambda a, b: a + c

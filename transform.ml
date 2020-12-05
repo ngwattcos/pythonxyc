@@ -10,8 +10,13 @@ let buf = ref (Buffer.create 0)
 (* Re-arranging Python AST expressions to a JavaScript-like format *)
 
 (* Things left to transform
- * 
 
+The difficulty is that map() and filter() returns an iterator
+ * list(map(lambda (x1...xn) : e1, e2)) -> e2.map((x1...xn) => e1)
+ * list(filter(lambda (x1...xn) : e1, e2)) -> e2.filter((x1...xn) => e1)
+
+ Reduce on the other hand is simipler:
+ *  reduce(lambda a, b : e1, e2) -> e1.reduce((a, b) => e2)
  *)
 let rec transform_e = function
 | Bexp(Aexp(VarAccess(v))) -> Bexp(Aexp(VarAccess(tranform_var_access v)))
@@ -132,7 +137,14 @@ let e = transform_e exp in match e with
 | Bexp (bexp) -> translate_bexp bexp
 | Stringexp (strexp) -> translate_stringexp strexp
 | NoneExp -> Buffer.add_string !buf "null"
+| Lambda (params, e) -> translate_lambda params e
 | _ -> ()
+
+and translate_lambda (params: params_list) (e: exp) =
+Buffer.add_string !buf "(";
+translate_params params;
+Buffer.add_string !buf (") => ");
+translate_e e
 
 and translate_stringexp (e: concat) = match e with
 | String (str) -> Buffer.add_string !buf str

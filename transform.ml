@@ -226,6 +226,9 @@ and translate_func_call (Call (var_access, args): func_call) =
 and translate_var (v: var) = Buffer.add_string !buf v; ()
 
 (* Expands a var_access in  "reversed" (correct) order *)
+(* See https://discuss.ocaml.org/t/narrowing-variant-types-alternatives/3806/2
+for an important discussion on "narrowing" the var_access type
+with GADTs *)
 and translate_var_access (v: var_access) = 
 match v with
 | Var (var) -> translate_var var

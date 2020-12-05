@@ -278,13 +278,18 @@ for_com:
     | FOR VAR IN exp COLON command_seq END          { ForIterExp(snd $2, $4, $6) }
 ;
 
-if_com: IF exp COLON command_seq END                       { IfBase($2, $4, []) }
-    | IF exp COLON command_seq if_elifs END                { IfBase($2, $4, $5) }
-    | IF exp COLON command_seq if_elifs ELSE command_seq END  { IfElse($2, $4, $5, $7) }
+if_com: IF exp COLON consume_newlines command_seq END       { IfBase($2, $5, []) }
+    | IF exp COLON consume_newlines
+        command_seq consume_newlines if_elifs END           { IfBase($2, $5, $7) }
+    | IF exp COLON consume_newlines
+        command_seq consume_newlines if_elifs
+        consume_newlines command_seq consume_newlines END   { IfElse($2, $5, $7, $9) }
 ;
 
-if_elifs: ELIF exp COLON command_seq                       { [Elif($2, $4)] }
-    | if_elifs ELIF exp COLON command_seq                  { Elif($3, $5)::$1 }
+if_elifs: ELIF consume_newlines exp COLON
+    consume_newlines command_seq                            { [Elif($3, $6)] }
+    | if_elifs consume_newlines ELIF exp COLON
+        consume_newlines command_seq                  { Elif($4, $7)::$1 }
 ;
 
 command:

@@ -23,8 +23,8 @@ and bexp =
 | GE of aexp * aexp
 | LT of aexp * aexp
 | LE of aexp * aexp
-| EQ of aexp * aexp
-| NE of aexp * aexp
+| EQ of bexp * bexp
+| NE of bexp * bexp
 | Aexp of aexp
 
 and update_op =

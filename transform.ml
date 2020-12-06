@@ -63,6 +63,7 @@ let rec translate_coms (prog: program) = match prog with
 | c::[] ->
     Buffer.add_buffer !buf !indbuf;
     translate_c c;
+    Buffer.add_string !buf "\n"
 | c::tl ->
     ignore (translate_coms tl);
     Buffer.add_buffer !buf !indbuf;
@@ -112,7 +113,7 @@ and translate_else coms =
     Buffer.add_string !indbuf "    ";
     translate_coms coms;
     Buffer.truncate !indbuf (undent !indbuf);
-    Buffer.add_string !buf ("\n}")
+    Buffer.add_string !buf ("}")
 
 and translate_elif e = match e with
 | (e, coms) ->
@@ -122,7 +123,7 @@ and translate_elif e = match e with
     Buffer.add_string !indbuf "    ";
     translate_coms coms;
     Buffer.truncate !indbuf (undent !indbuf);
-    Buffer.add_string !buf ("\n}")
+    Buffer.add_string !buf ("}")
 
 and translate_if i = match i with
 | (e, coms) ->
@@ -132,7 +133,7 @@ and translate_if i = match i with
     Buffer.add_string !indbuf "    ";
     translate_coms coms;
     Buffer.truncate !indbuf (undent !indbuf);
-    Buffer.add_string !buf ("\n}")
+    Buffer.add_string !buf ("}")
 
 and translate_func_def var params_list com_list =
     Buffer.add_buffer !buf !indbuf;
@@ -145,7 +146,7 @@ and translate_func_def var params_list com_list =
     translate_coms com_list;
     Buffer.truncate !indbuf (undent !indbuf);
     Buffer.add_buffer !buf !indbuf;
-    Buffer.add_string !buf "\n}"
+    Buffer.add_string !buf "}"
 
 and translate_val_update (c: val_update) = match c with
 | JLet (var, exp) ->
@@ -230,14 +231,14 @@ match e with
     translate_aexp a1;
     Buffer.add_string !buf " <= ";
     translate_aexp a2
-| EQ (a1, a2) ->
-    translate_aexp a1;
+| EQ (b1, b2) ->
+    translate_bexp b1;
     Buffer.add_string !buf " === ";
-    translate_aexp a2
-| NE (a1, a2) ->
-    translate_aexp a1;
+    translate_bexp b2
+| NE (b1, b2) ->
+    translate_bexp b1;
     Buffer.add_string !buf " !== ";
-    translate_aexp a2
+    translate_bexp b2
 | Aexp (a) -> translate_aexp a
 
 and translate_aexp (e: aexp) =

@@ -90,6 +90,12 @@ list: LBRACKET RBRACKET                                     { List([]) }
 ;
 
 /* Boolean expressions */
+compound_value:
+    | bexp                                                  { $1 }
+    | bexp DOUBLE_EQUALS bexp                               { EQ($1, $3) }
+    | bexp NOT_EQUALS bexp                                  { NE($1, $3) }
+;
+
 bexp:
     | or_exp                                                { $1 }
 ;
@@ -116,8 +122,6 @@ bexp_primitive:
     | aexp GT aexp                                          { GT($1, $3) }
     | aexp LE aexp                                          { LE($1, $3) }
     | aexp LT aexp                                          { LT($1, $3) }
-    | aexp DOUBLE_EQUALS aexp                               { EQ($1, $3) }
-    | aexp NOT_EQUALS aexp                                  { NE($1, $3) }
     | aexp                                                  { Aexp($1) }
 ;
 
@@ -195,7 +199,7 @@ concatenation:
 exp:
     | NONE                                                  { NoneExp }
     | concatenation                                         { Stringexp($1) }
-    | bexp                                                  { Bexp($1) }
+    | compound_value                                        { Bexp($1) }
     | LAMBDA function_parameters COLON exp                  { Lambda($2, $4) }
     | react_component                                       { React($1) }
 ;

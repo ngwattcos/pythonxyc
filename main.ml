@@ -5,7 +5,7 @@ open Transform
 open Printf
 
 let () =
-  let filename = "tests/translater/translate" ^ Sys.argv.(1) ^ ".pyx" in
+  let filename = "tests/translator/translate" ^ Sys.argv.(1) ^ ".pyx" in
   let lexbuf = Lexing.from_channel (open_in filename) in
   let c =
     try Grammar.program Lexer.token lexbuf

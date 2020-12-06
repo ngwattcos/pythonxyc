@@ -214,13 +214,13 @@ let _rbrace_ = "}"
 
 (* block begin and end *)
 let _colon_ = ":"
-let _endblock_ = "@end"
+let _endblock_ = _eol_"@end"
 let _reactblock_ = "@react"
 
 (* control flow *)
 let _if_ = "if"
-let _elif_ = "elif"
-let _else_ = "else"
+let _elif_ = _eol_"elif"
+let _else_ = _eol_"else"
 
 let _while_ = "while"
 let _for_ = "for"
@@ -301,7 +301,7 @@ rule token = parse
 | _lbrace_ { printf "·{·"; LBRACE(info lexbuf) }
 | _rbrace_ { printf "·}·"; RBRACE(info lexbuf) }
 | _colon_ { printf ":: "; COLON(info lexbuf) }
-| _endblock_ { printf "END "; END(info lexbuf) }
+| _endblock_ { printf "END "; newline lexbuf; END(info lexbuf) }
 | _reactblock_ { printf "REACTBEGIN "; react lexbuf }
 | _dot_ { printf "(dot)"; DOT(info lexbuf) }
 | _and_ { printf "(&&) "; AND(info lexbuf) }
@@ -310,8 +310,8 @@ rule token = parse
 | _in_ { printf "IN "; IN(info lexbuf) }
 | _is_ { printf "IS "; IS(info lexbuf) }
 | _if_ { printf "IF "; IF(info lexbuf) }
-| _elif_ { printf "ELIF "; ELIF(info lexbuf) }
-| _else_ { printf "ELSE "; ELSE(info lexbuf) }
+| _elif_ { printf "ELIF "; newline lexbuf; ELIF(info lexbuf) }
+| _else_ { printf "ELSE "; newline lexbuf; ELSE(info lexbuf) }
 | _while_ { printf "WHILE "; WHILE(info lexbuf) }
 | _for_ { printf "FOR "; FOR(info lexbuf) }
 | _break_ { printf "BREAK "; BREAK(info lexbuf) }

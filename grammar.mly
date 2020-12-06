@@ -215,7 +215,7 @@ import: IMPORT VAR                                          { ImportBase(snd $2)
     | IMPORT VAR FROM VAR                                   { ImportFrom(snd $2, snd $4) }
 ;
 
-while_com: WHILE exp COLON command_seq END                  { While($2, $4) }
+while_com: WHILE exp COLON program_lines END                  { While($2, $4) }
 ;
 
 function_parameters: VAR                                    { [snd $1] }
@@ -276,31 +276,30 @@ function_definition:
 
 for_com:
     | FOR VAR IN exp COLON
-        consume_newlines command_seq consume_newlines END   { ForIterExp(snd $2, $4, $7) }
+        program_lines END                                   { ForIterExp(snd $2, $4, $6) }
     | FOR VAR IN consume_newlines
         exp COLON
-        consume_newlines command_seq consume_newlines END   { ForIterExp(snd $2, $5, $8) }
+        program_lines END                                   { ForIterExp(snd $2, $5, $7) }
 ;
 
 
 if_base: IF exp COLON
-    consume_newlines command_seq                            { ($2, $5) }
+    program_lines                                           { ($2, $4) }
 
 if_elifs:
-    | if_base END                                           { IfBase($1) }
+    | if_base                                               { IfBase($1) }
     | if_elifs
         ELIF exp COLON
-        consume_newlines command_seq END                    { IfElifs($1, ($3, $6 )) }
+        program_lines                                       { IfElifs($1, ($3, $5 )) }
 ;
 
 if_com:
-    | if_elifs                                              { IfNoElse($1)}
+    | if_elifs END                                          { IfNoElse($1)}
     | if_elifs
         ELSE COLON
-        consume_newlines command_seq
-        END                                                 { IfElse($1, $5)}
-
-
+        program_lines
+        END                                                 { IfElse($1, $4)}
+;
 
 command:
     | val_update                                            { ValUpdate($1) }

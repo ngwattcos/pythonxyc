@@ -75,21 +75,11 @@ match transform_c c with
 | ValUpdate (val_update) ->
     translate_val_update val_update;
     Buffer.add_string !buf ";"
-| FuncDef (var, params_list, com_list) ->
-    Buffer.add_buffer !buf !indbuf;
-    Buffer.add_string !buf "const ";
-    translate_var var;
-    Buffer.add_string !buf " = (";
-    translate_params params_list;
-    Buffer.add_string !buf ") => {\n";
-    Buffer.add_string !indbuf "    ";
-    translate_coms com_list;
-    Buffer.truncate !indbuf (undent !indbuf);
-    Buffer.add_buffer !buf !indbuf;
-    Buffer.add_string !buf "}\n"
+| FuncDef (var, params_list, com_list) -> translate_func_def var params_list com_list
 | FuncCallCom (func) ->
     translate_func_call func;
     Buffer.add_string !buf ";"
+| If if_com -> translate_if_com if_com
 | ReturnExp (e) ->
     Buffer.add_string !buf "return ";
     translate_e e;
@@ -104,6 +94,59 @@ match transform_c c with
     Buffer.add_string !buf "continue";
     Buffer.add_string !buf ";"
 | _ -> failwith "unimplemented command"
+
+and translate_if_com ic = match ic with
+| IfNoElse if_elifs -> translate_elifs if_elifs
+| IfElse (if_elifs, el) ->
+    translate_elifs if_elifs;
+    translate_else el
+    
+
+and translate_elifs elifs = match elifs with
+| IfBase ib -> translate_if ib
+| IfElifs (ie, e) ->
+    translate_elifs ie;
+    translate_elif e
+
+and translate_else coms =
+    Buffer.add_string !buf "else {\n";
+    Buffer.add_string !indbuf "    ";
+    translate_coms coms;
+    Buffer.truncate !indbuf (undent !indbuf);
+    Buffer.add_string !buf ("\n}")
+
+and translate_elif e = match e with
+| (e, coms) ->
+    Buffer.add_string !buf "elif (";
+    translate_e e;
+    Buffer.add_string !buf ") {\n";
+    Buffer.add_string !indbuf "    ";
+    translate_coms coms;
+    Buffer.truncate !indbuf (undent !indbuf);
+    Buffer.add_string !buf ("\n}")
+
+and translate_if i = match i with
+| (e, coms) ->
+    Buffer.add_string !buf "if (";
+    translate_e e;
+    Buffer.add_string !buf ") {\n";
+    Buffer.add_string !indbuf "    ";
+    translate_coms coms;
+    Buffer.truncate !indbuf (undent !indbuf);
+    Buffer.add_string !buf ("\n}")
+
+and translate_func_def var params_list com_list =
+    Buffer.add_buffer !buf !indbuf;
+    Buffer.add_string !buf "const ";
+    translate_var var;
+    Buffer.add_string !buf " = (";
+    translate_params params_list;
+    Buffer.add_string !buf ") => {\n";
+    Buffer.add_string !indbuf "    ";
+    translate_coms com_list;
+    Buffer.truncate !indbuf (undent !indbuf);
+    Buffer.add_buffer !buf !indbuf;
+    Buffer.add_string !buf "}\n"
 
 and translate_val_update (c: val_update) = match c with
 | JLet (var, exp) ->

@@ -92,8 +92,6 @@ list: LBRACKET RBRACKET                                     { List([]) }
 /* Boolean expressions */
 compound_value:
     | bexp                                                  { $1 }
-    | bexp DOUBLE_EQUALS bexp                               { EQ($1, $3) }
-    | bexp NOT_EQUALS bexp                                  { NE($1, $3) }
 ;
 
 bexp:
@@ -111,7 +109,13 @@ and_exp:
 ;
 
 not_exp:
-    | NOT bexp_primitive                                    { Not($2) }
+    | NOT comparison                                        { Not($2) }
+    | comparison                                            { $1 }
+;
+
+comparison:
+    | bexp_primitive DOUBLE_EQUALS bexp_primitive           { EQ($1, $3) }
+    | bexp_primitive NOT_EQUALS bexp_primitive              { NE($1, $3) }
     | bexp_primitive                                        { $1 }
 ;
 

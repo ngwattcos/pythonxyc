@@ -210,9 +210,9 @@ match e with
     Buffer.add_string !buf " && ";
     translate_bexp b2
 | Not (b) ->
-    Buffer.add_string !buf " !";
+    Buffer.add_string !buf "!";
     translate_bexp b;
-    Buffer.add_string !buf " "
+    Buffer.add_string !buf ""
 | Bool (b) ->
     Buffer.add_string !buf (string_of_bool b)
 | GT (a1, a2) ->

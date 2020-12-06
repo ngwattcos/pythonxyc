@@ -156,6 +156,8 @@ let _anything_ = ['a'-'z' 'A' - 'Z' '0' - '9' '!' '@' '#' '$' '%' '^' '&' '*'
 '(' ')' '[' ']' '-' '_' '=' '+' '{' '}' '|' '\\' ';' ''' ':'
  ',' '.' '/' '<' '>' '?' '`' '~' ' ' '\t' '\n']
 
+let _anything_non_special_ = ['a'-'z' 'A' - 'Z' '0' - '9' '!' '@' '#' '$']
+
 let _string_ = "\""_anything_*"\""
 
 let _digit_ = ['0'-'9']
@@ -163,7 +165,7 @@ let _digit_ = ['0'-'9']
 (* let _float_ = ['1'-'9']*['0'-'9']"."['0'-'9']+ *)
 let _int_ = _digit_+
 let _float_ = _digit_+"."_digit_+
-let _var_ = ['a'-'z' 'A'-'Z' '_']+['a'-'z' 'A'-'Z' '_' '0'-'9']*
+let _var_ = ['a'-'z' 'A'-'Z' '_']+_anything_non_special_*
 
 (* assignment operators *)
 let _equals_ = "="

@@ -21,7 +21,10 @@ The difficulty is that map() and filter() returns an iterator
  Reduce on the other hand is simipler:
  *  reduce(lambda a, b : e1, e2) -> e1.reduce((a, b) => e2)
  *)
-let rec tranform_var_access = function
+let rec transform_e (e: exp) = match e with
+| e -> e
+
+and tranform_var_access = function
 (* handles len(var), len([]) *)
 | FuncCallVal(Call((Var "len"), [Bexp(Aexp(VarAccess s))])) -> Dot(s, "length")
 (* handles str(exp) -> String(exp) *)
@@ -185,7 +188,7 @@ and translate_update_op (op: update_op) = match op with
     Buffer.add_string !buf " %= "
 
 and translate_e (exp: exp) =
-match exp with
+let e = transform_e exp in match e with
 | Bexp (bexp) -> translate_bexp bexp
 | Stringexp (strexp) -> translate_stringexp strexp
 | NoneExp -> Buffer.add_string !buf "null"

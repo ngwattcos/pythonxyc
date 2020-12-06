@@ -88,9 +88,16 @@ and import =
 | ImportBase of var
 | ImportFrom of var * var
 
+and if_base = exp * (com list)
+and elif = if_base
+
+and if_elifs =
+| IfBase of if_base
+| IfElifs of if_elifs * elif
+
 and if_com =
-| IfBase of exp * (com list) * (elif_com list)                       (* If-then *)
-| IfElse of exp * (com list) * (elif_com list) * (com list)          (* If-elif-elif...else *)
+| IfNoElse of if_elifs
+| IfElse of if_elifs * (com list)          (* If-elif-elif...else *)
 
 and elif_com =
 | Elif of exp * (com list)

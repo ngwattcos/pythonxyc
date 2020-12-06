@@ -69,10 +69,16 @@ var_access: VAR                                             { Var(snd $1) }
 
 dict_entries: exp COLON exp                                 { [($1, $3)] }
     | dict_entries COMMA exp COLON exp                      { ($3, $5)::$1 }
+    | dict_entries COMMA
+        consume_newlines exp COLON exp                      { ($4, $6)::$1 }
 ;
 
 dict: LBRACE RBRACE                                         { Dict([]) }
     | LBRACE dict_entries RBRACE                            { Dict($2) }
+    | LBRACE consume_newlines dict_entries RBRACE           { Dict($3) }
+    | LBRACE dict_entries consume_newlines RBRACE           { Dict($2) }
+    | LBRACE consume_newlines dict_entries
+        consume_newlines RBRACE                             { Dict($3) }
 ;
 
 list_items: exp                                             { [$1] }
@@ -269,17 +275,32 @@ function_definition:
 ;
 
 for_com:
-    | FOR VAR IN exp COLON command_seq END          { ForIterExp(snd $2, $4, $6) }
+    | FOR VAR IN exp COLON
+        consume_newlines command_seq consume_newlines END   { ForIterExp(snd $2, $4, $7) }
+    | FOR VAR IN consume_newlines
+        exp COLON
+        consume_newlines command_seq consume_newlines END   { ForIterExp(snd $2, $5, $8) }
 ;
 
-if_com: IF exp COLON command_seq END                       { IfBase($2, $4, []) }
-    | IF exp COLON command_seq if_elifs END                { IfBase($2, $4, $5) }
-    | IF exp COLON command_seq if_elifs ELSE command_seq END  { IfElse($2, $4, $5, $7) }
+
+if_base: IF exp COLON
+    consume_newlines command_seq                            { ($2, $5) }
+
+if_elifs:
+    | if_base END                                           { IfBase($1) }
+    | if_elifs
+        ELIF exp COLON
+        consume_newlines command_seq END                    { IfElifs($1, ($3, $6 )) }
 ;
 
-if_elifs: ELIF exp COLON command_seq                       { [Elif($2, $4)] }
-    | if_elifs ELIF exp COLON command_seq                  { Elif($3, $5)::$1 }
-;
+if_com:
+    | if_elifs                                              { IfNoElse($1)}
+    | if_elifs
+        ELSE COLON
+        consume_newlines command_seq
+        END                                                 { IfElse($1, $5)}
+
+
 
 command:
     | val_update                                            { ValUpdate($1) }

@@ -11,22 +11,22 @@ let parse_program (filename:string) =
       exit 1 in
   (ast)
 
-let empty_list = []
-let list_a = [1;2;3]
+let lexer_path n = "tests/lexer/lex0" ^ n ^ ".pyx"
+let parser_path n = "tests/parser/parse" ^ n ^ ".pyx"
+let transformer_path n = "tests/transformer/transform" ^ n ^ ".pyx"
 
-let test_fun _ =
-  let ast = parse_program "tests/parser/parse00.pyx" in
-  assert_equal 1 1
+let test_lexer n _ = ignore(string_of_int n |> lexer_path |> parse_program); print_endline "\n\n"
 
-let test_var _ =
-  let list_b = List.append empty_list [1;2;3] in
-  assert_equal list_b list_a
-
-let suite =
-  "ParserTests" >::: [
-    "test_fun" >:: test_fun;
-    "test_var" >:: test_var
+let suite = 
+  "LexerTests" >::: [
+    "lex00" >:: test_lexer 0;
+    "lex01" >:: test_lexer 1;
+    "lex02" >:: test_lexer 2;
+    "lex03" >:: test_lexer 3;
+    "lex04" >:: test_lexer 4;
+    "lex05" >:: test_lexer 5;
   ]
+ 
 
 let () =
   run_test_tt_main suite

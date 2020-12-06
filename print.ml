@@ -20,6 +20,17 @@ let pretty_math_helper = function
 | Mod _ -> "Mod", "%"
 | _ -> raise (TypeError "pretty_math_helper")
 
+let pretty_bool_helper = function
+| Or _ -> "Or", "||"
+| And _ -> "And", "&&"
+| GT _ -> "GT", ">"
+| GE _ -> "GE", ">="
+| LT _ -> "LT", "<"
+| LE _ -> "LE", "<="
+| EQ _ -> "EQ", "=="
+| NE _ -> "NEQ", "!="
+| _ -> raise (TypeError "pretty_bool_helper")
+
 let rec pretty_aexp a = match a with
 | Int i -> sprintf "Int( %d )" i, string_of_int i
 | Float f -> sprintf "Float( %.5f )" f, sprintf " %.5f " f
@@ -36,123 +47,153 @@ let rec pretty_aexp a = match a with
     sprintf "%s( %s, %s )" pop1 pa11 pa21, sprintf " %s %s %s " pa12 pop2 pa22
 
 and pretty_bexp b = match b with
-| Or (b1, b2) | And (b1, b2) -> "", ""
+| Or (b1, b2) | And (b1, b2) -> 
+    let pop1, pop2 = pretty_bool_helper b in
+    let pb11, pb12 = pretty_bexp b1 in
+    let pb21, pb22 = pretty_bexp b2 in
+    sprintf "%s( %s, %s )" pop1 pb11 pb21, sprintf " %s %s %s " pop2 pb12 pb22
 | Not b1 -> 
     let b11, b12 = pretty_bexp b1 in
     sprintf "Not( %s )" b11, sprintf " !%s " b12
 | Bool false -> "Bool( false )", " false "
 | Bool true -> "Bool ( true )", " true "
-| GT (b1, b2)| GE (b1, b2)| LT (b1, b2)| LE (b1, b2)| EQ (b1, b2)| NE (b1, b2) -> "", ""
-| Aexp a1 -> "", ""
+| GT (b1, b2)| GE (b1, b2)| LT (b1, b2)| LE (b1, b2)| EQ (b1, b2)| NE (b1, b2) -> 
+    let pop1, pop2 = pretty_bool_helper b in
+    let pb11, pb12 = pretty_aexp b1 in
+    let pb21, pb22 = pretty_aexp b2 in
+    sprintf "%s( %s, %s )" pop1 pb11 pb21, sprintf " %s %s %s " pop2 pb12 pb22
+| Aexp a -> 
+    let pa1, pa2 = pretty_aexp a in
+    sprintf "Aexp( %s )" pa1, pa2
+
+and pretty_dict_helper = function
+| (e1, e2)::t -> 
+    let pe11, pe12 = pretty_exp e1 in
+    let pe21, pe22 = pretty_exp e2 in
+    let ph1, ph2 = pe11 ^ ": " ^ pe21, pe12 ^ ": " ^ pe22 in
+    if t = [] 
+    then ph1, ph2 
+    else let pt1, pt2 = pretty_dict_helper t in ph1 ^ ", " ^ pt1, ph2 ^ ", " ^ pt2
+| [] -> "", ""
+
+and pretty_list_helper = function
+| e::t ->  
+    let pe1, pe2 = pretty_exp e in
+    if t = [] 
+    then pe1, pe2
+    else let pt1, pt2 = pretty_list_helper t in pe1 ^ ", " ^ pt1, pe1 ^ ", " ^ pt2
+| [] -> "", ""
 
 and pretty_va = function
-| _ -> "Unimplemented", "Unimplemented"
+| Var v -> "Var( " ^ v ^ " )", v
+| Dict l -> let pl1, pl2 = pretty_dict_helper l in "Dict( ["^ pl1 ^"] )", "{" ^ pl2 ^"}"
+| List l -> let pl1, pl2 = pretty_list_helper l in "List( ["^ pl1 ^"] )", "[" ^ pl2 ^"]"
+| Dot (va, v) -> 
+    let pva1, pva2 = pretty_va va in 
+    sprintf "Dot( %s, %s )"  pva1 v, sprintf "%s.%s" pva2 v
+| Key (va, e) ->
+    let pva1, pva2 = pretty_va va in 
+    let pe1, pe2 = pretty_exp e in
+    sprintf "Key( %s, %s )"  pva1 pe1, sprintf "%s[ %s ]" pva2 pe2
+| Slice (va, e1, e2) ->
+    let pva1, pva2 = pretty_va va in
+    let pe11, pe12 = pretty_exp e1 in 
+    let pe21, pe22 = pretty_exp e2 in
+    sprintf "Slice( %s, %s, %s )"  pva1 pe11 pe21, sprintf "%s[ %s : %s ]" pva2 pe12 pe22
+| FuncCallVal (Call (va, l)) -> 
+    let pva1, pva2 = pretty_va va in 
+    let pargs1, pargs2 = pretty_args_list l in 
+    sprintf "FuncCallVal( Call( %s, [ %s ] ) )" pva1 pargs1, pva2 ^ "( " ^ pargs2 ^ " )"
 
-and pretty_exp = function
-| _ -> "Unimplemented", "Unimplemented"
-(*
-let rec pretty_react_close = function
-| ReactClose s -> failwith "Unimplemented"
+and pretty_react_open (ReactOpen (s, l))= "ReactOpen()", "<>"
 
-let rec pretty_import = function
-| ImportBase (v, s) -> sprintf "import %s from \"%s\"" v s
-| ImportAs (v1, s, v2) -> sprintf "import %s as %s from \"%s\"" v1 s v2
+and pretty_react_attribute (Attrib (s, e)) =  "Attrib()", "Attrib()"
 
-let rec pretty_aexp = function
-| Int i -> sprintf "%d" i
-| Float f -> sprintf "%.5f" f
-| IntParen a -> pretty_aexp a |> sprintf "(%s)" 
-| Expon (a1, a2) -> sprintf "%s^%s" (pretty_aexp a1) (pretty_aexp a2)
-| Neg a -> pretty_aexp a |> sprintf "-%s" 
-| Times (a1, a2) -> pretty_3 (pretty_aexp a1) "*" (pretty_aexp a2)
-| Div (a1, a2) -> pretty_3 (pretty_aexp a1) "\\" (pretty_aexp a2)
-| Plus (a1, a2) -> pretty_3 (pretty_aexp a1) "+" (pretty_aexp a2)
-| Minus (a1, a2) -> pretty_3 (pretty_aexp a1) "-" (pretty_aexp a2)
-| Mod (a1, a2) -> pretty_3 (pretty_aexp a1) "%" (pretty_aexp a2)
-| IntVarAccess va -> pretty_var_access va
-| IntFuncCallVal fc -> pretty_function_call fc
-
-and pretty_bexp = function
-| BoolVarAccess va -> pretty_var_access va
-| BoolFuncCallVal fc -> pretty_function_call fc
-| BoolParen b -> pretty_bexp b |> sprintf "(%s)" 
-| Or (b1, b2) -> pretty_3 (pretty_bexp b1) "||" (pretty_bexp b2)
-| And (b1, b2) -> pretty_3 (pretty_bexp b1) "&&" (pretty_bexp b2)
-| Not b -> pretty_bexp b |> sprintf "!%s" 
-| Bool true -> "True"
-| Bool false -> "False"
-| GT (a1, a2) -> pretty_3 (pretty_aexp a1) ">" (pretty_aexp a2)
-| GE (a1, a2) -> pretty_3 (pretty_aexp a1) ">=" (pretty_aexp a2)
-| LT (a1, a2) -> pretty_3 (pretty_aexp a1) "<" (pretty_aexp a2)
-| LE (a1, a2) -> pretty_3 (pretty_aexp a1) "<=" (pretty_aexp a2)
-| EQ (a1, a2) -> pretty_3 (pretty_aexp a1) "==" (pretty_aexp a2)
-| NE (a1, a2) -> pretty_3 (pretty_aexp a1) "!=" (pretty_aexp a2)
-| Aexp a -> pretty_aexp a
-
-and pretty_function_call = function
-| Call (va, al) -> sprintf "%s(%s)" (pretty_var_access va) (pretty_args_list al)
-
-and pretty_var_access = function
-| Var v -> v
-| Dot (va, v) -> sprintf "%s.%s" (pretty_var_access va) v
-| Key (va, e) -> sprintf "%s[%s]" (pretty_var_access va) (pretty_exp e)
-
-and pretty_react_open = function
-| ReactOpen (s, ral) -> failwith "Unimplemented"
+and pretty_react_close (ReactClose s) = "ReactClose( " ^ s ^ " )", "<" ^ s ^ "/>"
 
 and pretty_react_component = function
-| ReactComponent (ro, rc) -> failwith "Unimplemented"
+| ReactComponentRecur (ro, l) -> "React", "React"
+| ReactComponentExp (ro, e) -> "React", "React"
 
-and pretty_react_attribute = function
-| Attrib (s, e) -> failwith "Unimplemented"
+and pretty_concat = function
+| String s -> "String( " ^ s ^ " )", s
+| Concat(c, s) -> 
+    let pc1, pc2 = pretty_concat c in
+    sprintf "Concat( %s, %s )" pc1 s, s ^ " + " ^ pc2 (* might be backwards *)
 
 and pretty_exp = function
-| None -> "null"
-| Bexp b -> pretty_bexp b
-| String s -> "\"" ^ s ^ "\""
-| VarAccess va -> pretty_var_access va
-| Dict l -> failwith "Unimplemented"
-| List l -> failwith "Unimplemented"
-| Lambda (pl, e) -> failwith "Unimplemented"
-| FuncCallVal fc -> pretty_function_call fc
-| Paren e -> pretty_exp e |> sprintf "(%s)"
-| React rc -> pretty_react_component rc
+| NoneExp -> "NoneExp", "None"
+| Bexp b -> 
+    let pb1, pb2 = pretty_bexp b in "Bexp( " ^ pb1 ^ " )", pb2
+| Stringexp c ->
+    let pc1, pc2 = pretty_concat c in "Stringexp( " ^ pc1 ^ " )", pc2
+| Lambda (l, e) -> 
+    let pl1, pl2 = pretty_params_list l in
+    let pe1, pe2 = pretty_exp e in
+    sprintf "Lambda( [ %s ], %s )" pl1 pe1, "λ( " ^ pl2 ^ " )." ^ pe2
+| React rc -> 
+    let prc1, prc2 = pretty_react_component rc in "React( " ^ prc1 ^ " )", prc2
 
-and pretty_com = function
-| ValUpdate vu -> failwith "Unimplemented"
-| FuncDef (v, pl, cl) -> failwith "Unimplemented"
-| FuncCallCom fc -> pretty_function_call fc
-| While (e, c) -> failwith "Unimplemented"
-| If ic -> pretty_if_com ic
-| For fc -> pretty_for_com fc
-| ReturnExp e -> "return " ^ (pretty_exp e)
-| Return -> "return"
-| Break -> "break"
-| Continue -> "continue"
-| Import i -> pretty_import i
-| Raise s -> failwith "Unimplemented"
+and pretty_com = function 
+| NoneCom -> "NoneCom", "NoneC"
+| ValUpdate vu -> 
+    let pvu1, pvu2 = pretty_vu vu in 
+    sprintf "ValUpdate( %s )" pvu1, pvu2
+| FuncCallCom (Call (va, l)) ->  
+    let pva1, pva2 = pretty_va va in 
+    let pargs1, pargs2 = pretty_args_list l in 
+    sprintf "FuncCallVal( Call( %s, [ %s ] ) )" pva1 pargs1, pva2 ^ "( " ^ pargs2 ^ " )"
+| ReturnExp e -> 
+    let pe1, pe2 = pretty_exp e in
+    "Return( " ^ pe1 ^ " )", "return " ^ pe2
+| Return -> "Return", "return"
+| Break -> "Break", "break"
+| Continue -> "Continue", "continue"
+| Import i -> 
+    let pi1, pi2 = pretty_import i in
+    "Import( " ^ pi1 ^ " )", "import " ^ pi2 ^ " "
+| Raise s -> "Raise( " ^ s ^ " )", "raise"
+| FuncDef (v, pl, cl) -> "FuncDef", ""
+| While (e, cl) -> "While", "while"
+| If ic ->  "If", "if"
+| For fc ->  "For", " for"
 
-and pretty_if_com = function
-| IfBase (e, cl, ecl) -> failwith "Unimplemented"
-| IfElse (e, cl1, ecl, cl2) -> failwith "Unimplemented"
+and pretty_import = function 
+| ImportBase v -> "ImportBase( " ^ v ^ " )", v
+| ImportFrom (v1, v2) -> "ImportBase( " ^ v1 ^", " ^ v2 ^ " )", v1 ^ " from " ^ v2
 
-and pretty_elif_com = function
-| Elif (e, cl) -> failwith "Unimplemented" 
-
-and pretty_for_com = function
-| ForFunc (v, s, cl) -> failwith "Unimplemented"
-| ForIterVar (v1, v2, cl) -> failwith "Unimplemented"
-
-and pretty_val_update = function
-| JLet (v, e) -> sprintf "let %s = %s" v (pretty_exp e)
-| JConst (v, e) ->  sprintf "const %s = %s" v (pretty_exp e)
-| Update (va, uo, e) -> failwith "Unimplemented"
+and pretty_vu = function 
+| JLet (v, e) -> 
+    let pe1, pe2 = pretty_exp e in 
+    sprintf "JLet( %s, %s )" v pe1, v ^ " = " ^ pe2
+| JConst (v, e) -> 
+    let pe1, pe2 = pretty_exp e in 
+    sprintf "JConst( %s, %s )" v pe1, v ^ " = " ^ pe2
+| Update (va, op, e) -> 
+    let pva1, pva2 = pretty_va va in
+    let pop1, pop2 = pretty_update_op op in
+    let pe1, pe2 = pretty_exp e in 
+    sprintf "Update( %s, %s, %s )" pva1 pop1 pe1, pva2 ^ pop2 ^ pe2
 
 and pretty_params_list = function
-| Params vl -> failwith "Unimplemented"
+| v::t -> 
+    if t = [] 
+    then v, v
+    else let pt1, pt2 = pretty_params_list t in v ^ ", " ^ pt1, v ^ ", " ^ pt2
+| [] -> "", ""
 
 and pretty_args_list = function
-| Args el -> failwith "Unimplemented"
+| e::t -> 
+ let pe1, pe2 = pretty_exp e in
+    if t = [] 
+    then pe1, pe2
+    else let pt1, pt2 = pretty_list_helper t in pe1 ^ ", " ^ pt1, pe1 ^ ", " ^ pt2
+| [] -> "", ""
 
-and pretty_program = function
-| cl -> failwith "Unimplemented" *)
+and pretty_program b l =
+print_string "[\n";
+List.iter (fun c -> let pc1, pc2 = pretty_com c in if b then print_string pc1 else print_string pc2; print_string ",\n") l;
+print_string "]\n"
+
+let print_verbose = pretty_program true
+let print_mini = pretty_program false

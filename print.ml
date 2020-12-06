@@ -57,10 +57,15 @@ and pretty_bexp b = match b with
     sprintf "Not( %s )" b11, sprintf " !%s " b12
 | Bool false -> "Bool( false )", " false "
 | Bool true -> "Bool ( true )", " true "
-| GT (b1, b2)| GE (b1, b2)| LT (b1, b2)| LE (b1, b2)| EQ (b1, b2)| NE (b1, b2) -> 
+| GT (b1, b2)| GE (b1, b2)| LT (b1, b2)| LE (b1, b2) -> 
     let pop1, pop2 = pretty_bool_helper b in
     let pb11, pb12 = pretty_aexp b1 in
     let pb21, pb22 = pretty_aexp b2 in
+    sprintf "%s( %s, %s )" pop1 pb11 pb21, sprintf " %s %s %s " pop2 pb12 pb22
+| EQ (b1, b2)| NE (b1, b2) -> 
+    let pop1, pop2 = pretty_bool_helper b in
+    let pb11, pb12 = pretty_bexp b1 in
+    let pb21, pb22 = pretty_bexp b2 in
     sprintf "%s( %s, %s )" pop1 pb11 pb21, sprintf " %s %s %s " pop2 pb12 pb22
 | Aexp a -> 
     let pa1, pa2 = pretty_aexp a in

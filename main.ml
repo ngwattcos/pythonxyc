@@ -6,20 +6,6 @@ open Transform
 open Printf
 open Print
 
-<<<<<<< HEAD
-let () =
-  let filename = "tests/translator/translate" ^ Sys.argv.(1) ^ ".pyx" in
-  let lexbuf = Lexing.from_channel (open_in filename) in
-  let c =
-    try Grammar.program Lexer.token lexbuf
-    with Parsing.Parse_error ->
-      Printf.printf "Syntax error at line %d character %d\n"
-        !Lexer.lineno
-        (Lexing.lexeme_end lexbuf - !Lexer.linestart - 1);
-      exit 1 in
-  let transpiled = Buffer.contents (Transform.translate c) in
-  printf "\n\n\n"; print_endline transpiled
-=======
 let banner = "----------------------------------------------------------------------------\n"
 
 let l = Array.length Sys.argv - 1
@@ -33,7 +19,7 @@ let flag = match opt with
 let filename = match flag with 
 | "l" | "L" -> "tests/lexer/lex" ^ num ^ ".pyx"
 | "p" | "P" | "a" | "A" | "g" | "G" -> "tests/parser/parse" ^ num ^ ".pyx"
-| "t" | "T" | _ -> "tests/translater/translate" ^ num ^ ".pyx"
+| "t" | "T" | _ -> "tests/translator/translate" ^ num ^ ".pyx"
 
 let lexbuf = Lexing.from_channel (open_in filename)
 
@@ -60,4 +46,3 @@ let _ =
   match flag with
   | "t" | "T" -> print_string banner; ast |> Transform.translate |> Buffer.contents |> print_endline
   | _ -> ()
->>>>>>> a0dd622fe3c493040fbd49d64838a5d4d77c7144

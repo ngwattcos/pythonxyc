@@ -62,16 +62,12 @@ let rec translate_coms (prog: program) = match prog with
 | [] -> ()
 | c::[] ->
     Buffer.add_buffer !buf !indbuf;
-<<<<<<< HEAD
     translate_c c;
-=======
-    ignore(translate_c c);
->>>>>>> a0dd622fe3c493040fbd49d64838a5d4d77c7144
     Buffer.add_string !buf "\n"
 | c::tl ->
-    ignore (translate_coms tl);
+    translate_coms tl;
     Buffer.add_buffer !buf !indbuf;
-    ignore (translate_c c);
+    translate_c c;
     Buffer.add_string !buf "\n"
 
 and translate_c (c: com) = 

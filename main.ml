@@ -1,5 +1,6 @@
 open Ast
 open Lexer
+open Lexer_verbose
 open Grammar
 open Transform
 open Printf
@@ -22,9 +23,13 @@ let filename = match flag with
 
 let lexbuf = Lexing.from_channel (open_in filename)
 
-(* print lexing, currently always enabled *)
+(* enable print lexing *)
+let token = match flag with 
+| "l" | "L" -> Lexer_verbose.token
+| _ -> Lexer.token 
+
 let ast =
-  try Grammar.program Lexer.token lexbuf
+  try Grammar.program token lexbuf
   with Parsing.Parse_error ->
     Printf.printf "Syntax error at line %d character %d\n"
     !Lexer.lineno

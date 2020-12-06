@@ -1,4 +1,4 @@
-MODULES=ast grammar lexer transform main print
+MODULES=ast grammar lexer transform main print lexer_verbose
 OBJECTS=$(MODULES:=.cmo)
 MLS=$(MODULES:=.ml)
 RUN=main.byte

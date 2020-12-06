@@ -223,7 +223,7 @@ import: IMPORT VAR                                          { ImportBase(snd $2)
     | IMPORT VAR FROM VAR                                   { ImportFrom(snd $2, snd $4) }
 ;
 
-while_com: WHILE exp COLON program_lines END                  { While($2, $4) }
+while_com: WHILE exp COLON program_lines END                { While($2, $4) }
 ;
 
 function_parameters: VAR                                    { [snd $1] }

@@ -79,6 +79,7 @@ match transform_c c with
 | FuncCallCom (func) ->
     translate_func_call func;
     Buffer.add_string !buf ";"
+| While (e, coms) -> translate_while e coms
 | If if_com -> translate_if_com if_com
 | ReturnExp (e) ->
     Buffer.add_string !buf "return ";
@@ -94,6 +95,15 @@ match transform_c c with
     Buffer.add_string !buf "continue";
     Buffer.add_string !buf ";"
 | _ -> failwith "unimplemented command"
+
+and translate_while e coms =
+    Buffer.add_string !buf "while (";
+    translate_e e;
+    Buffer.add_string !buf ") {\n";
+    Buffer.add_string !indbuf "    ";
+    translate_coms coms;
+    Buffer.truncate !indbuf (undent !indbuf);
+    Buffer.add_string !buf "}"
 
 and translate_if_com ic = match ic with
 | IfNoElse if_elifs -> translate_elifs if_elifs

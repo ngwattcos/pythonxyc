@@ -21,11 +21,7 @@ The difficulty is that map() and filter() returns an iterator
  Reduce on the other hand is simipler:
  *  reduce(lambda a, b : e1, e2) -> e1.reduce((a, b) => e2)
  *)
-let rec transform_e = function
-| Bexp(Aexp(VarAccess(v))) -> Bexp(Aexp(VarAccess(tranform_var_access v)))
-| e -> e
-
-and tranform_var_access = function
+let rec tranform_var_access = function
 (* handles len(var), len([]) *)
 | FuncCallVal(Call((Var "len"), [Bexp(Aexp(VarAccess s))])) -> Dot(s, "length")
 (* handles str(exp) -> String(exp) *)
@@ -189,7 +185,7 @@ and translate_update_op (op: update_op) = match op with
     Buffer.add_string !buf " %= "
 
 and translate_e (exp: exp) =
-let e = transform_e exp in match e with
+match exp with
 | Bexp (bexp) -> translate_bexp bexp
 | Stringexp (strexp) -> translate_stringexp strexp
 | NoneExp -> Buffer.add_string !buf "null"
@@ -297,7 +293,8 @@ and translate_var (v: var) = Buffer.add_string !buf v; ()
 (* See https://discuss.ocaml.org/t/narrowing-variant-types-alternatives/3806/2
 for an important discussion on "narrowing" the var_access type
 with GADTs *)
-and translate_var_access (v: var_access) = 
+and translate_var_access (var: var_access) =
+let v = tranform_var_access var in
 match v with
 | Var (var) -> translate_var var
 | Dot (v1, var) ->

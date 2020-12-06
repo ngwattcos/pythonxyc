@@ -105,8 +105,9 @@ and elif_com =
 (* for i in items *)
 (* for i in [0, 1, 2, 3] *)
 and for_com =
-| ForFunc of var * (var * args_list) * (com list)
 | ForIterExp of var * exp * (com list)
+| ForJS of com * exp * com * (com list)
+| ForIterJS of var * var * (com list)
 (* | ForIter of var * (exp list) *)
 
 and val_update =

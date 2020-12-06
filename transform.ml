@@ -45,15 +45,37 @@ and tranform_var_access = function
  * for key in dict.keys() -> const key in dictionary
 
  Syntactically, we ony support this where arr is an array
- * for var in range(arr) -> for (const var = 0; var < arr.length; var++) {...}
- * for var in range(a, b) -> for (const var = a; var < b; var++) {...}
- * for var in range(a, b, c) -> for (const var = a; var < b; var += c) {...}
+ * for var in range(arr) -> for (let var = 0; var < arr.length; var++) {...}
+ * for var in range(a, b) -> for (let var = a; var < b; var++) {...}
+ * for var in range(a, b, c) -> for (let var = a; var < b; var += c) {...}
 
  *)
 let rec transform_c = function
-| FuncCallCom(Call(Var("print"), l)) -> FuncCallCom(Call(Var("console.log"), l)) 
+| FuncCallCom(Call(Var("print"), l)) -> FuncCallCom(Call(Var("console.log"), l))
 | c -> c
 
+and transform_for_com = function
+| ForIterExp (var,
+    Bexp(Aexp(VarAccess(FuncCallVal(Call(Var("range"), [c; Bexp(Aexp(Int(b))); a]))))), coms) ->
+    let initial = ValUpdate(JLet(var, a)) in
+    let terminal = Bexp(LT((VarAccess(Var(var))), Int(b))) in
+    let update = ValUpdate(Update(Var(var), PlusEquals, c)) in
+    ForJS(initial, terminal, update, coms)
+| ForIterExp (var,
+    Bexp(Aexp(VarAccess(FuncCallVal(Call(Var("range"), [Bexp(Aexp(Int(b))); a]))))), coms) ->
+    let initial = ValUpdate(JLet(var, a)) in
+    let terminal = Bexp(LT((VarAccess(Var(var))), Int(b))) in
+    let update = ValUpdate(Update(Var(var), PlusEquals, Bexp(Aexp(Int(1))))) in
+    ForJS(initial, terminal, update, coms)
+| ForIterExp (var,
+    Bexp(Aexp(VarAccess(FuncCallVal(Call(Var("range"), [Bexp(Aexp(Int(b)))]))))), coms) ->
+    let initial = ValUpdate(JLet(var, Bexp(Aexp(Int(0))))) in
+    let terminal = Bexp(LT((VarAccess(Var(var))), Int(b))) in
+    let update = ValUpdate(Update(Var(var), PlusEquals, Bexp(Aexp(Int(1))))) in
+    ForJS(initial, terminal, update, coms)
+| ForIterExp (var, Bexp(Aexp(VarAccess(FuncCallVal(Call(Dot(Var(v), "keys"), []))))), coms) ->
+    ForIterJS (var, v, coms)
+| for_com -> for_com
 
 (* Translations from Python AST to JavaScript/JSX. *)
 
@@ -69,31 +91,73 @@ let rec translate_coms (prog: program) = match prog with
     translate_c c;
     Buffer.add_string !buf "\n"
 
-and translate_c (c: com) = 
+and translate_c (c: com) =
+translate_c_nosemi c;
+match c with
+| ValUpdate (val_update) ->
+    Buffer.add_string !buf ";"
+| FuncDef (var, params_list, com_list) -> ()
+| FuncCallCom (func) ->
+    Buffer.add_string !buf ";"
+| While (e, coms) -> ()
+| If if_com -> ()
+| For for_com -> ()
+| ReturnExp (e) ->
+    Buffer.add_string !buf ";"
+| Return ->
+    Buffer.add_string !buf ";"
+| Break ->
+    Buffer.add_string !buf ";"
+| Continue ->
+    Buffer.add_string !buf ";"
+| _ -> failwith "unimplemented command"
+
+and translate_c_nosemi (c: com) = 
 match transform_c c with
 | ValUpdate (val_update) ->
     translate_val_update val_update;
-    Buffer.add_string !buf ";"
 | FuncDef (var, params_list, com_list) -> translate_func_def var params_list com_list
 | FuncCallCom (func) ->
     translate_func_call func;
-    Buffer.add_string !buf ";"
 | While (e, coms) -> translate_while e coms
 | If if_com -> translate_if_com if_com
+| For for_com -> translate_for_com for_com
 | ReturnExp (e) ->
     Buffer.add_string !buf "return ";
     translate_e e;
-    Buffer.add_string !buf ";"
 | Return ->
     Buffer.add_string !buf "return";
-    Buffer.add_string !buf ";"
 | Break ->
     Buffer.add_string !buf "break";
-    Buffer.add_string !buf ";"
 | Continue ->
     Buffer.add_string !buf "continue";
-    Buffer.add_string !buf ";"
 | _ -> failwith "unimplemented command"
+
+and translate_for_com for_com =
+match (transform_for_com for_com) with
+| ForJS (initial, terminal, update, coms) ->
+    Buffer.add_string !buf "for (";
+    translate_c initial;
+    Buffer.add_string !buf " ";
+    translate_e terminal;
+    Buffer.add_string !buf "; ";
+    translate_c_nosemi update;
+    Buffer.add_string !buf ") {\n";
+    Buffer.add_string !indbuf "    ";
+    translate_coms coms;
+    Buffer.truncate !indbuf (undent !indbuf);
+    Buffer.add_string !buf "}";
+| ForIterJS (var1, var2, coms) ->
+    Buffer.add_string !buf "for (";
+    translate_var var1;
+    Buffer.add_string !buf " in ";
+    translate_var var2;
+    Buffer.add_string !buf ") {\n";
+    Buffer.add_string !indbuf "    ";
+    translate_coms coms;
+    Buffer.truncate !indbuf (undent !indbuf);
+    Buffer.add_string !buf "}";
+| _ -> failwith "incorrectly translated for command"
 
 and translate_while e coms =
     Buffer.add_string !buf "while (";

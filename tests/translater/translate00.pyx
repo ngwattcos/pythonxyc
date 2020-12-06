@@ -3,7 +3,7 @@
 # The first line is intentionally a newline 
 
 # Variable declaration requires @let or @const
-@let t = t
+@let t = 1
 @let y = "Hello world"
 @const x = 7.6
 

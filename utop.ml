@@ -1,3 +1,5 @@
+open Ast
+
 let parse_program (filename:string) =
   let lexbuf = Lexing.from_channel (open_in filename) in
   let ast =

@@ -257,7 +257,77 @@ let e = transform_e exp in match e with
 | Stringexp (strexp) -> translate_stringexp strexp
 | NoneExp -> Buffer.add_string !buf "null"
 | Lambda (params, e) -> translate_lambda params e
-| _ -> ()
+| React (react_component) ->translate_react react_component
+
+and translate_react rc = match rc with
+| ReactComponentRecur (ReactOpen(str, attribs), children) ->
+    Buffer.add_string !buf "\n";
+    Buffer.add_string !indbuf "    ";
+    Buffer.add_buffer !buf !indbuf;
+    Buffer.add_string !buf "(";
+    translate_react_component_recur str attribs children;
+    Buffer.truncate !indbuf (undent !indbuf);
+    Buffer.add_string !buf ")";
+| ReactComponentExp (ReactOpen(str, attribs), e) ->
+    Buffer.add_string !buf "\n";
+    Buffer.add_string !indbuf "    ";
+    Buffer.add_buffer !buf !indbuf;
+    Buffer.add_string !buf "(";
+    translate_react_component_inter str attribs e;
+    Buffer.truncate !indbuf (undent !indbuf);
+    Buffer.add_string !buf ")";
+
+and translate_react_component_recur str attribs children =
+    translate_react_open str attribs;
+    Buffer.add_string !indbuf "    ";
+    translate_react_children children;
+    Buffer.truncate !indbuf (undent !indbuf);
+    translate_react_close str
+
+and translate_react_children children = match children with
+| h::t ->
+    Buffer.add_string !indbuf "    ";
+    translate_react_children t;
+    translate_react h;
+    Buffer.truncate !indbuf (undent !indbuf)
+| [] -> ()
+
+and translate_react_component_inter str attribs e =
+    translate_react_open str attribs;
+    Buffer.add_string !buf "{";
+    translate_e e;
+    Buffer.add_string !buf "}";
+    translate_react_close str
+
+
+and translate_react_open str attribs =
+    Buffer.add_string !buf "<";
+    Buffer.add_string !buf str;
+    translate_react_attribs attribs;
+    Buffer.add_string !buf ">"
+
+
+and translate_react_attribs attribs =
+    List.iter (fun attrib ->
+        Buffer.add_string !buf " ";
+        translate_react_attrib attrib
+    ) attribs;
+
+and translate_react_attrib attrib = match attrib with
+| Attrib (str, Stringexp(String(str_val))) ->
+    Buffer.add_string !buf str;
+    Buffer.add_string !buf "=";
+    Buffer.add_string !buf str_val;
+| Attrib (str, e) ->
+    Buffer.add_string !buf str;
+    Buffer.add_string !buf "={";
+    translate_e e;
+    Buffer.add_string !buf "}";
+
+and translate_react_close str =
+    Buffer.add_string !buf "</";
+    Buffer.add_string !buf str;
+    Buffer.add_string !buf ">"
 
 and translate_lambda (params: params_list) (e: exp) =
 Buffer.add_string !buf "(";

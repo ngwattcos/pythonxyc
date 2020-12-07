@@ -13,16 +13,16 @@ def fun2(arg1, arg2):
     # some commands
     print(arg1)
     print(arg2)
-    return
+    return 0
 @end
 
 # testing indentation
 def fun3():
-    return
+    return "adfsdf"
 @end
 
 def fun4():
-    return
+    return lambda x: x + 1
 @end
 
 def fun5():

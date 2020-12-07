@@ -34,6 +34,7 @@ let pretty_bool_helper = function
 let rec pretty_aexp a = match a with
 | Int i -> sprintf "Int( %d )" i, string_of_int i
 | Float f -> sprintf "Float( %.5f )" f, sprintf " %.5f " f
+| String s -> "String( " ^ s ^ " )", s
 | VarAccess va -> 
     let pva1, pva2 = pretty_va va in
     sprintf "VarAccess( %s )" pva1, sprintf " %s " pva2
@@ -120,18 +121,10 @@ and pretty_react_component = function
 | ReactComponentRecur (ro, l) -> "React", "React"
 | ReactComponentExp (ro, e) -> "React", "React"
 
-and pretty_concat = function
-| String s -> "String( " ^ s ^ " )", s
-| Concat(c, s) -> 
-    let pc1, pc2 = pretty_concat c in
-    sprintf "Concat( %s, %s )" pc1 s, s ^ " + " ^ pc2 (* might be backwards *)
-
 and pretty_exp = function
 | NoneExp -> "NoneExp", "None"
 | Bexp b -> 
     let pb1, pb2 = pretty_bexp b in "Bexp( " ^ pb1 ^ " )", pb2
-| Stringexp c ->
-    let pc1, pc2 = pretty_concat c in "Stringexp( " ^ pc1 ^ " )", pc2
 | Lambda (l, e) -> 
     let pl1, pl2 = pretty_params_list l in
     let pe1, pe2 = pretty_exp e in

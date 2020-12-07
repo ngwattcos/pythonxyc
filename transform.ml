@@ -254,14 +254,15 @@ and translate_update_op (op: update_op) = match op with
 and translate_e (exp: exp) =
 let e = transform_e exp in match e with
 | Bexp (bexp) -> translate_bexp bexp
-| Stringexp (strexp) -> translate_stringexp strexp
 | NoneExp -> Buffer.add_string !buf "null"
 | Lambda (params, e) -> translate_lambda params e
-| React (react_component) -> translate_react react_component
+| React (react_component) -> translate_jsx react_component
 
 and translate_jsx rc =
     Buffer.add_string !buf "(";
     translate_react rc;
+    Buffer.add_string !buf "\n";
+    Buffer.add_buffer !buf !indbuf;
     Buffer.add_string !buf ")";
 
 and translate_react rc = match rc with
@@ -280,9 +281,7 @@ and translate_react rc = match rc with
 
 and translate_react_component_recur str attribs children =
     translate_react_open str attribs;
-    Buffer.add_string !indbuf "    ";
     translate_react_children children;
-    Buffer.truncate !indbuf (undent !indbuf);
     Buffer.add_string !buf "\n";
     Buffer.add_buffer !buf !indbuf;
     translate_react_close str
@@ -295,9 +294,13 @@ and translate_react_children children = match children with
 
 and translate_react_component_inter str attribs e =
     translate_react_open str attribs;
+    Buffer.add_string !buf "\n";
+    Buffer.add_string !indbuf "    ";
+    Buffer.add_buffer !buf !indbuf;
     Buffer.add_string !buf "{";
     translate_e e;
     Buffer.add_string !buf "}\n";
+    Buffer.truncate !indbuf (undent !indbuf);
     Buffer.add_buffer !buf !indbuf;
     translate_react_close str
 
@@ -316,7 +319,7 @@ and translate_react_attribs attribs =
     ) attribs;
 
 and translate_react_attrib attrib = match attrib with
-| Attrib (str, Stringexp(String(str_val))) ->
+| Attrib (str, Bexp(Aexp(String(str_val)))) ->
     Buffer.add_string !buf str;
     Buffer.add_string !buf "=";
     Buffer.add_string !buf str_val;
@@ -337,12 +340,8 @@ translate_params params;
 Buffer.add_string !buf (") => ");
 translate_e e
 
-and translate_stringexp (e: concat) = match e with
-| String (str) -> Buffer.add_string !buf str
-| Concat (concat, str) ->
-    translate_stringexp concat;
-    Buffer.add_string !buf " + ";
-    Buffer.add_string !buf str
+and translate_string str =
+Buffer.add_string !buf str;
 
 and translate_bexp (e: bexp) =
 match e with
@@ -390,6 +389,7 @@ and translate_aexp (e: aexp) =
 match e with
 | Int (i) -> Buffer.add_string !buf (string_of_int i)
 | Float (f) -> Buffer.add_string !buf (string_of_float f)
+| String (strexp) -> translate_string strexp
 | VarAccess (var_access) -> translate_var_access var_access
 | Paren (e) ->
     Buffer.add_string !buf "(";

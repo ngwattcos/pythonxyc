@@ -5,6 +5,7 @@ type info = (int * int) * (int * int)
 type aexp =
 | Int of int
 | Float of float
+| String of string
 | VarAccess of var_access
 | Paren of exp
 | Expon of aexp * aexp
@@ -57,14 +58,9 @@ and react_component =
 
 and react_attribute = Attrib of string * exp
 
-and concat =
-| String of string
-| Concat of concat * string
-
 and exp =
 | NoneExp
 | Bexp of bexp
-| Stringexp of concat
 | Lambda of params_list * (exp)
 | React of react_component
 

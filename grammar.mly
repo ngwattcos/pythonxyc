@@ -159,12 +159,13 @@ exponen_exp:
 aexp_primitive:
     | INT                                                   { Int(snd $1) }
     | FLOAT                                                 { Float(snd $1) }
+    | STRING                                                { String(snd $1) }
     | var_access                                            { VarAccess($1) }
     | LPAREN exp RPAREN                                     { Paren($2) }
 ;
 
 react_attribute:
-    | VAR EQUALS STRING                                     { Attrib(snd $1, Stringexp(String(snd $3))) }
+    | VAR EQUALS STRING                                     { Attrib(snd $1, Bexp(Aexp(String(snd $3)))) }
     | VAR EQUALS LBRACE exp RBRACE                          { Attrib(snd $1, $4) }
 ;
 
@@ -207,14 +208,8 @@ child_component_list:
         react_component                                     { $3::$1 }
 ;
 
-concatenation:
-    | STRING                                                { String(snd $1) }
-    | concatenation PLUS STRING                             { Concat($1, (snd $3)) }
-;
-
 exp:
     | NONE                                                  { NoneExp }
-    | concatenation                                         { Stringexp($1) }
     | compound_value                                        { Bexp($1) }
     | LAMBDA function_parameters COLON exp                  { Lambda($2, $4) }
     | react_component                                       { React($1) }

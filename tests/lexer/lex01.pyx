@@ -7,7 +7,7 @@ y += 2
 
 # dicts and lists
 @let dict = {
-    "a": -0.10,
+    "a": 0.10, #negative numbers are not supported because conflicts
     2: "b"
 }
 

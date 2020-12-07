@@ -110,6 +110,8 @@ match c with
     Buffer.add_string !buf ";"
 | Continue ->
     Buffer.add_string !buf ";"
+| Import import ->
+    Buffer.add_string !buf ";"
 | _ -> failwith "unimplemented command"
 
 and translate_c_nosemi (c: com) = 
@@ -131,7 +133,31 @@ match transform_c c with
     Buffer.add_string !buf "break";
 | Continue ->
     Buffer.add_string !buf "continue";
+| Import import -> translate_import import
 | _ -> failwith "unimplemented command"
+
+and translate_import import = match import with
+| ImportBase (v1, v2) ->
+    Buffer.add_string !buf "import ";
+    Buffer.add_string !buf v2;
+    Buffer.add_string !buf " from '";
+    Buffer.add_string !buf v1;
+    Buffer.add_string !buf "'";
+| ImportFrom (lst, var) ->
+    Buffer.add_string !buf "import {";
+    translate_import_names lst;
+    Buffer.add_string !buf "} from '";
+    Buffer.add_string !buf var;
+    Buffer.add_string !buf "'";
+
+and translate_import_names lst = match lst with
+| [] -> ()
+| h::[] ->
+    Buffer.add_string !buf h
+| h::t ->
+    translate_import_names t;
+    Buffer.add_string !buf ", ";
+    Buffer.add_string !buf h
 
 and translate_for_com for_com =
 match (transform_for_com for_com) with

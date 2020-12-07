@@ -226,8 +226,13 @@ val_update:
 	| var_access MODULO_EQUALS exp                          { Update($1, ModuloEquals, $3) }
 ;
 
-import: IMPORT VAR                                          { ImportBase(snd $2) }
-    | IMPORT VAR FROM VAR                                   { ImportFrom(snd $2, snd $4) }
+import: IMPORT VAR AS VAR                                   { ImportBase(snd $2, snd $4) }
+    | IMPORT var_list FROM VAR                              { ImportFrom($2, snd $4) }
+;
+
+var_list:
+    | VAR                                                   { [snd $1] }
+    | var_list COMMA VAR                                    { (snd $3)::$1 }
 ;
 
 while_com: WHILE exp COLON program_lines END                { While($2, $4) }

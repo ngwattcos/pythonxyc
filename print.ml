@@ -157,8 +157,12 @@ and pretty_com = function
 | For fc ->  "For", " for"
 
 and pretty_import = function 
-| ImportBase v -> "ImportBase( " ^ v ^ " )", v
-| ImportFrom (v1, v2) -> "ImportBase( " ^ v1 ^", " ^ v2 ^ " )", v1 ^ " from " ^ v2
+| ImportBase (v1, v2) -> "ImportBase( " ^ v1 ^ ", " ^ v2 ^ " )", "ImportBase"
+| ImportFrom (lst, v) -> "ImportBase( " ^ combine lst "" ^ " )", "ImportFrom"
+
+and combine lst acc = match lst with
+| h::t -> h ^ acc
+| [] -> acc
 
 and pretty_vu = function 
 | JLet (v, e) -> 

@@ -1,3 +1,4 @@
+# React lexing is currently buggy
 def Card(title, descr):
     return (
 

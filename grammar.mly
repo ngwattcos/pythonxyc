@@ -186,13 +186,25 @@ react_close:
 
 react_component:
     | react_open react_close                                { ReactComponentRecur($1, []) }
+    | react_open consume_newlines react_close               { ReactComponentRecur($1, []) }
     | react_open child_component_list react_close           { ReactComponentRecur($1, $2) }
+    | react_open consume_newlines
+        child_component_list react_close                    { ReactComponentRecur($1, $3) }
+    | react_open child_component_list
+        consume_newlines react_close                        { ReactComponentRecur($1, $2) }
+    | react_open consume_newlines
+        child_component_list consume_newlines react_close   { ReactComponentRecur($1, $3) }
     | react_open LBRACE exp RBRACE react_close              { ReactComponentExp($1, $3) }
+    | react_open consume_newlines
+        LBRACE exp RBRACE
+        consume_newlines react_close                        { ReactComponentExp($1, $4) }
 ;
 
 child_component_list:
     | react_component                                       { $1::[] }
     | child_component_list react_component                  { $2::$1 }
+    | child_component_list consume_newlines
+        react_component                                     { $3::$1 }
 ;
 
 concatenation:

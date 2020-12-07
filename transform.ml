@@ -257,46 +257,48 @@ let e = transform_e exp in match e with
 | Stringexp (strexp) -> translate_stringexp strexp
 | NoneExp -> Buffer.add_string !buf "null"
 | Lambda (params, e) -> translate_lambda params e
-| React (react_component) ->translate_react react_component
+| React (react_component) -> translate_react react_component
+
+and translate_jsx rc =
+    Buffer.add_string !buf "(";
+    translate_react rc;
+    Buffer.add_string !buf ")";
 
 and translate_react rc = match rc with
 | ReactComponentRecur (ReactOpen(str, attribs), children) ->
     Buffer.add_string !buf "\n";
     Buffer.add_string !indbuf "    ";
     Buffer.add_buffer !buf !indbuf;
-    Buffer.add_string !buf "(";
     translate_react_component_recur str attribs children;
     Buffer.truncate !indbuf (undent !indbuf);
-    Buffer.add_string !buf ")";
 | ReactComponentExp (ReactOpen(str, attribs), e) ->
     Buffer.add_string !buf "\n";
     Buffer.add_string !indbuf "    ";
     Buffer.add_buffer !buf !indbuf;
-    Buffer.add_string !buf "(";
     translate_react_component_inter str attribs e;
     Buffer.truncate !indbuf (undent !indbuf);
-    Buffer.add_string !buf ")";
 
 and translate_react_component_recur str attribs children =
     translate_react_open str attribs;
     Buffer.add_string !indbuf "    ";
     translate_react_children children;
     Buffer.truncate !indbuf (undent !indbuf);
+    Buffer.add_string !buf "\n";
+    Buffer.add_buffer !buf !indbuf;
     translate_react_close str
 
 and translate_react_children children = match children with
 | h::t ->
-    Buffer.add_string !indbuf "    ";
     translate_react_children t;
     translate_react h;
-    Buffer.truncate !indbuf (undent !indbuf)
 | [] -> ()
 
 and translate_react_component_inter str attribs e =
     translate_react_open str attribs;
     Buffer.add_string !buf "{";
     translate_e e;
-    Buffer.add_string !buf "}";
+    Buffer.add_string !buf "}\n";
+    Buffer.add_buffer !buf !indbuf;
     translate_react_close str
 
 

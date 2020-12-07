@@ -13,3 +13,5 @@ t = 5 % t + 1
 
 # t = "!" + y is currently not supported
 t = "!" + "Hello world"
+
+t = 1 + 2 * 3**4

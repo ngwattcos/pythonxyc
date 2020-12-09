@@ -142,13 +142,23 @@ and translate_import import = match import with
     Buffer.add_string !buf v2;
     Buffer.add_string !buf " from '";
     Buffer.add_string !buf v1;
-    Buffer.add_string !buf "'";
+    Buffer.add_string !buf "'"
 | ImportFrom (lst, var) ->
-    Buffer.add_string !buf "import {";
+    Buffer.add_string !buf "import { ";
     translate_import_names lst;
-    Buffer.add_string !buf "} from '";
+    Buffer.add_string !buf " } from '";
     Buffer.add_string !buf var;
-    Buffer.add_string !buf "'";
+    Buffer.add_string !buf "'"
+| ImportBaseString (v1, str) ->
+    Buffer.add_string !buf "import ";
+    Buffer.add_string !buf v1;
+    Buffer.add_string !buf " from ";
+    translate_string str
+| ImportFromString (lst, str) ->
+    Buffer.add_string !buf "import { ";
+    translate_import_names lst;
+    Buffer.add_string !buf " } from ";
+    translate_string str
 
 and translate_import_names lst = match lst with
 | [] -> ()

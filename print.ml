@@ -159,6 +159,8 @@ and pretty_com = function
 and pretty_import = function 
 | ImportBase (v1, v2) -> "ImportBase( " ^ v1 ^ ", " ^ v2 ^ " )", "ImportBase"
 | ImportFrom (lst, v) -> "ImportBase( " ^ combine lst "" ^ " )", "ImportFrom"
+| ImportBaseString (v1, str) -> "ImportBaseString( " ^ v1 ^ ", " ^ str ^ " )", "ImportBaseString"
+| ImportFromString (lst, str) -> "ImportBaseString( " ^ combine lst "" ^ " )", "ImportFromString"
 
 and combine lst acc = match lst with
 | h::t -> h ^ acc

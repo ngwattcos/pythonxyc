@@ -82,6 +82,8 @@ and com =
 and import =
 | ImportBase of var * var
 | ImportFrom of (var list) * var
+| ImportBaseString of var * string
+| ImportFromString of (var list) * string
 
 and if_base = exp * (com list)
 and elif = if_base

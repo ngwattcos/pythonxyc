@@ -20,7 +20,11 @@ let flag = match opt with
 | _ -> "t"
 
 let input_path = "../" ^ inDir ^ path
-let output_path = "../" ^ outDir ^ path
+let filename =
+if l >= 4 then
+String.sub input_path ((String.length input_path) - 4) (String.length input_path)
+else ""
+let output_path = "../" ^ outDir ^ filename ^ ".jsx"
 
 let test_file = match flag with 
 | "l" | "L" -> "tests/lexer/lex" ^ path ^ ".pyx"

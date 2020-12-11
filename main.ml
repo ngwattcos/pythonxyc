@@ -21,19 +21,26 @@ let flag = match opt with
 
 let input_path = "../" ^ inDir ^ path
 let filename =
-if l >= 4 then
-String.sub input_path ((String.length input_path) - 4) (String.length input_path)
+if l >= 3 then
+String.sub path 0 ((String.length path) - 4)
 else ""
 let output_path = "../" ^ outDir ^ filename ^ ".jsx"
 
-let test_file = match flag with 
-| "l" | "L" -> "tests/lexer/lex" ^ path ^ ".pyx"
-| "p" | "P" | "a" | "A" | "g" | "G" -> "tests/parser/parse" ^ path ^ ".pyx"
-| "t" | "T" | _ -> "tests/translator/translate" ^ path ^ ".pyx"
+(* let _ =
+print_endline (string_of_int l);
+print_endline ("path: " ^ path);
+print_endline ("filename: " ^ filename);
+print_endline input_path;
+print_endline output_path *)
+
+(* let test_file = match flag with 
+| "l" | "L" -> "tests/lexer/lex" ^ path
+| "p" | "P" | "a" | "A" | "g" | "G" -> "tests/parser/parse" ^ path
+| "t" | "T" | _ -> "tests/translator/translate" ^ path *)
 
 let lexbuf = match flag with
-| "t" -> Lexing.from_channel (open_in input_path)
-| "T" | _ -> Lexing.from_channel (open_in test_file)
+| _ -> Lexing.from_channel (open_in input_path)
+(* | "T" | _ -> Lexing.from_channel (open_in test_file) *)
 
 (* enable print lexing *)
 let token = match flag with 

@@ -346,7 +346,7 @@ and parse_double_quote = parse
 and single_comment = parse
 | _eol_ { newline lexbuf; token lexbuf }
 | eof  { exit 0 }
-| _ as c { single_comment lexbuf }
+| _ { single_comment lexbuf }
 
 and multi_comment = parse
 | _eol_ { newline lexbuf; multi_comment lexbuf}

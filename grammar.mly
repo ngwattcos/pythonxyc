@@ -228,7 +228,6 @@ val_update:
 
 import: IMPORT VAR AS VAR                                   { ImportBase(snd $2, snd $4) }
     | IMPORT var_list FROM VAR                              { ImportFrom($2, snd $4) }
-    | IMPORT VAR FROM STRING                                { ImportBaseString(snd $2, snd $4) }
     | IMPORT var_list FROM STRING                           { ImportFromString($2, snd $4) }
 ;
 

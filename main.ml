@@ -19,12 +19,12 @@ let flag = match opt with
 | "l" | "L" | "p" | "P" | "a" | "A" | "g" | "G" | "t" | "T" -> opt
 | _ -> "t"
 
-let input_path = "../../" ^ inDir ^ path
+let input_path = inDir ^ path
 let filename =
 if l >= 3 then
 String.sub path 0 ((String.length path) - 4)
 else ""
-let output_path = "../../" ^ outDir ^ filename ^ ".jsx"
+let output_path = outDir ^ filename ^ ".jsx"
 
 (* let _ =
 print_endline (string_of_int l);

@@ -9,77 +9,6 @@ exception UnrecognizedStr of string
 exception UnrecognizedChar
 exception Eof
 exception LexingError of string
-(*
-  type token =
-  | NEWLINE
-  | EXTEND
-  | SQUOTE
-  | DQUOTE
-  | NONE
-  | BOOL of bool
-  | STRING of string
-  | INT of int
-  | FLOAT of float
-  | VAR of string
-  | EQUALS
-  | PLUS_EQUALS
-  | MINUS_EQUALS
-  | TIMES_EQUALS
-  | DIVIDE_EQUALS
-  | MODULO_EQUALS
-  | DOUBLE_EQUALS
-  | NOT_EQUALS
-  | PLUS
-  | MINUS
-  | TIMES
-  | EXP
-  | DIVIDE
-  | FLOOR_DIVIDE
-  | MODULO
-  | GT
-  | GE
-  | LT
-  | LE
-  | LPAREN
-  | RPAREN
-  | LBRACKET
-  | RBRACKET
-  | LBRACE
-  | RBRACE
-  | COMMA
-  | COLON
-  | END
-  | DOT
-  | AND
-  | OR
-  | NOT
-  | IN
-  | IS
-  | IF
-  | ELIF
-  | ELSE
-  | WHILE
-  | FOR
-  | BREAK
-  | CONTINUE
-  | CLASS
-  | DEF
-  | RETURN
-  | LAMBDA
-  | TRY
-  | EXCEPT
-  | RAISE
-  | DELETE
-  | IMPORT
-  | FROM
-  | AS
-  | JLET
-  | JCONST
-  | REACT
-  | REACT_JSX of string
-  | REACT_CHAR of char
-  | EOF
-*)
 
 (* error and line number code borrowed from *)
 (* CS 4110 A2 from Cornell University *)
@@ -151,6 +80,11 @@ let _true_ = "True"
 let _false_ = "False"
 
 (*let _string_ = '\"'(_[^'\"'])*'\"'*)
+
+(* See https://stackoverflow.com/questions/63460031/some-special-characters-are-allowed-only-if-they-are-preceded-by-an-escape-chara
+for help on handling escape sequences.
+
+*)
 
 let _anything_ = ['a'-'z' 'A' - 'Z' '0' - '9' '!' '@' '#' '$' '%' '^' '&' '*'
 '(' ')' '[' ']' '-' '_' '=' '+' '{' '}' '|' '\\' ';' ''' ':'

@@ -5,6 +5,34 @@ PythonXY is Python extended with JSX to allow building React apps.
 
 While a Python-to-JavaScript compiler is always fun and all, pythonxyc is best enjoyed fresh when used in the npm module `react-python`, which can be found at https://www.npmjs.com/package/react-python.
 
+# Table of Contents
+- [Build and Usage](#build-and-usage)
+    + [Paths](#paths)
+- [How It Works](#how-it-works)
+  * [Overview](#overview)
+  * [Lexing Overview](#lexing-overview)
+  * [PythonXY and Parsing Overview](#pythonxy-and-parsing-overview)
+    + [Indentation and Program Structure](#indentation-and-program-structure)
+    + [Variable Declarations](#variable-declarations)
+- [Supported Language Features](#supported-language-features)
+  * [The Basics](#the-basics)
+  * [Operators](#operators)
+    + [Order of precedence (from least to most)](#order-of-precedence--from-least-to-most-)
+  * [Commands](#commands)
+  * [Expressions](#expressions)
+  * [React and JSX as Expressions](#react-and-jsx-as-expressions)
+  * [What is NOT Supported](#what-is-not-supported)
+- [Translation Overview](#translation-overview)
+  * [Transformation](#transformation)
+    + [Command Transformations](#command-transformations)
+    + [Expression Transformations](#expression-transformations)
+  * [Translation](#translation)
+  * [Coming Soon!](#coming-soon-)
+  * [Errors in Implementation](#errors-in-implementation)
+
+<small><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></small>
+
+
 
 # Build and Usage
 Development and building requires OCaml version 4.09.0 installed according to https://www.cs.cornell.edu/courses/cs3110/2020sp/install.html.
@@ -444,7 +472,23 @@ Transformation is necessary to convert certain commands and expressions into a J
 Most commands are transformed simply at the top-level that they are detected. This is because few commands recursively need this level of transformation. The exception is `for` loops, which can can occur anywhere in any body of a program (`while` loops don't need to be transformed).
 
 **for loops**
+The following types for for loops are supported:
+* `for i in range(end):`
+* `for i in range(start, end):`
+* `for i in range(start, end, skip):`
+* `for i in dict.keys():`***
+* `for i in dict_or_array:`
 
+Reminder that in the last example above, PythonXY handles iterating through a dictionary as looping through its values to bring its behavior closer to JavaScript. This is different than in Python, which loops through the values of the map.
+
+***NOTE: for above, `dict.keys()` is a misnomer and will be corrected to `dict.entries()` in the next update. See **Errors in Implementation**.
+
+These are translated as follows, respectively:
+* `for (let i = 0; i < end; i++)`
+* `for (let i = start; i < end; i++)`
+* `for (let i = start; i < end; i += skip)`
+* `for (i in dict)`
+* `for (i in dict_or_array)`
 
 ### Expression Transformations
 Expression are recursively transformed at every level of translation. This is because expressions can be recursive.
@@ -481,3 +525,13 @@ Note that this transformation is recursive.
 `[[str(exp)]]` -> `String([[exp]])`
 
 ## Translation
+
+## Coming Soon!
+This is a recap of what is coming soon!
+
+* classes with constructors and methods
+
+## Errors in Implementation
+The following are errors in implementation (fortunately, these are easily corrected):
+* for loops accepting only `dict.keys()` is a misnomer; should be `dict.entries()`
+* string incompleteness

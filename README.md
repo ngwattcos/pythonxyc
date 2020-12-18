@@ -52,8 +52,9 @@ Our recursive definitions of expressions in `grammar.mly` preserve operator prec
 * strings
 * function call expressions
 * parenthetical expressions containing other expressions
+* dicts and lists
 
-Obviously, this is a type-unsafe definition, as this would allow one to do `"string" + 12`, which is invalid in Python (but valid in JavaScript oddly enough). However, neither language is typed and we have not added static type checking features to this language, so we leave the responsibility of writing type-safe programs to the programmer ;)
+Obviously, this is a type-unsafe definition, as this would allow one to do `[1, 2, 3] + {"key": 0}` (obviously illegal) or `"string" + 12`, which is invalid in Python (but valid in JavaScript oddly enough). However, neither language is typed and we have not added static type checking features to this language, so we leave the responsibility of writing type-safe programs to the programmer ;)
 
 In our parser, we have plenty of variant types for optional newlines. We understand that the ability to have optional tokens automatically makes Menhir vastly superior to ocamlyacc, but we were in too deep and just had to stick with it :')
 
@@ -179,6 +180,51 @@ returning an expression:
 
 ## Expressions
 **`bexp` expressions**
+**variable expressions**
+What we mean by variable expressions:
+
+    # a regular variable
+    @let t = obj
+    # a dot property
+    @let v = obj.velocity
+    # an index into an array or dict
+    @let vx = obj.velocity[0]
+    # a dot into an index
+    @let vx = obj.velocity[0].
+	'''... and so on!'''
+    
+**dicts**
+Newlines are optional here.
+
+    {
+	    [exp1]: [exp2]
+	    ...
+    }
+
+**lists**
+Again, newlines between entries are optional.
+
+    [1, 2, True, False, "string", variable]
+
+**lambda functions**
+
+    lambda x -> x * x
+
+**ints and floats**
+**strings**
+**function calls**
+Same as with function calls as commands above, but function calls can both return values and/or be used as commands.
+
+[variable_expression]\(\)
+
+    # basic function call
+    @let t = var.potoot.tamoot[0]
+
+[variable_expression]([exp1], [exp2], [exp3],...)
+
+    # with arguments
+    @let t = var.potoot.tamoot[0](banoonoo, spinooch...)
+    
 
 ### React Expressions
 These deserve their own entire section.
@@ -206,3 +252,9 @@ Most commands are transformed simply at the top-level that they are detected. Th
 
 ### Expression Transformations
 Expression are recursively transformed at every level of translation. This is because expressions can be recursive.
+**map**
+**filter**
+**reduce**
+**len**
+**slice**
+**str**

@@ -194,6 +194,15 @@ Classes are not supported yet, but are coming soon! Hopefully, this should not b
 
 # Translation Overview
 
-There are two steps in translation: AST transformation and the translation itself.
+There are two steps in translation: AST transformation and the translation itself. AST transformation wrangles the AST on some cases. Translation writes the AST to a buffer, which can the be written to a file as the compiled output.
 
-### List of Transformations
+Transformation is necessary to convert certain commands and expressions into a JavaScript-friendly format. Here are some examples:
+* `print([exp])` should transform into `console.log([exp])`
+* `for i in range(4): ...@end` should transform to `for (let i = 0; i < 4; i++) {...}`
+
+
+### Command Transformations
+Most commands are transformed simply at the top-level that they are detected. This is because few commands recursively need this level of transformation. The exception is `for` loops, which can can occur anywhere in any body of a program (`while` loops don't need to be transformed).
+
+### Expression Transformations
+Expression are recursively transformed at every level of translation. This is because expressions can be recursive.

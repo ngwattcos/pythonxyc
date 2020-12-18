@@ -41,7 +41,21 @@ Finally, we borrowed a couple functions of line-counting code and lexing error h
 
 
 ## PythonXY and Parsing Overview
-PythonXY is very similar to Python. It is composed of sequences of commands padded with an arbitrary number of newlines in between. Sequences of command are recursively defined as Commands are your typical imperative language commands, such as if statements, while statements, for statements, assignments, function definitions, function calls, continue commands, and return statements. Expressions are primitives (ints, floats, booleans), strings, dictionaries, lists, and functions.
+PythonXY is very similar to Python. It is composed of sequences of commands padded with an arbitrary number of newlines in between. Sequences of commands are recursively defined as follows:
+* a command
+* a sequence of command, followed by at least 1 newline, followed by a command
+
+Commands are your typical imperative language commands, such as if statements, while statements, for statements, assignments, function definitions, function calls, continue commands, and return statements. As such, commands usually also contain expressions. Expressions are primitives (ints, floats, booleans), strings, dictionaries, lists, and functions.
+
+Our recursive definitions of expressions in `grammar.mly` preserve operator precedence - instead of relying on `ocamlyacc`'s built-in operator precedence declarations, we define expressions in terms of `bexp` boolean expressions, which contain comparisons involving `aexp` expressions or are `aexp` expressions themselves, which are either binary expressions of `aexp` expressions or some other primitives such as:
+* ints and floats
+* strings
+* function call expressions
+* parenthetical expressions containing other expressions
+
+Obviously, this is a type-unsafe definition, as this would allow one to do `"string" + 12`, which is invalid in Python (but valid in JavaScript oddly enough). However, neither language is typed and we have not added static type checking features to this language, so we leave the responsibility of writing type-safe programs to the programmer ;)
+
+In our parser, we have plenty of variant types for optional newlines. We understand that the ability to have optional tokens automatically makes Menhir vastly superior to ocamlyacc, but we were in too deep and just had to stick with it :')
 
 ### Indentation and Program Structure
 As you may have inferred, one important difference between Python and PythonXY is how indentation and scope is handled. In Python, scope is enforced by indentation. While this makes regular Python code look clean overall, we believe that enforcing indentation while having to make a decision on whether to enforce this for JSX as well was the wrong approach. Instead, we opted to use the more common approach of using specifc tokens to delineate the "opening" and "closing" of a scope. In our case, tokens that "open" a scope would be declarations for if, while, for, and functions, while the token that "closes" a scope is `@end`. We chose this token to visually match with Python directives.
@@ -49,13 +63,38 @@ As you may have inferred, one important difference between Python and PythonXY i
 ### Variable Declarations
 Python variables and JavaScript variables are handled differently. Python variables are simply declared by name, why nowadays JavaScript developers use the `let` and `const` keywords in their. This poses a problem for us - without an extra layer of static analysis, we would not be able to differentiate variable updates from variable declarations, and then there was the question of deciding whether a variable would be mutable or constant. Instead, we opted to use the keywords `@let` and `@const` to declare mutable and constant variables respectively, in the style of Python decorators.
 
-## Supported Language Features
-### The Basics
+# Supported Language Features
+## The Basics
 Comments, commands, and expressions make up a PythonXY program.
 
-### Commands
+## Operators
+### Order of precedence (from least to most)
+* binary operators: `=`, `+=`, `*=`, `-=`, `/=`, `%=`
+* `or`
+* `and`
+* `not`
+* equality check: `==`, `!=`
+* numeric comparison: `>=`, `>`, `<`, `<=`
+* `%`
+* `+`
+* `*`, `/`
+* `**`
+* parentheses
+
+
+## Commands
 
 **Assignment and Updates**
+Variables can be declared and updated as follows:
+
+    # declaring
+    @let var1 = 1
+    @const var2 = "a"
+    # updating
+    var1 = str(var) + var2
+    # suppose such a variable exists
+    items[0].get().head += 10
+
 By extension, exports are supported as well. One could easily define:
 
 `modules.exports = varName`
@@ -66,16 +105,95 @@ or even
 	    "funcName1": funcName1
     }
 
-### Expressions
-### What is NOT Supported
+**while loops**
+
+    while [exp]:
+        [exp list]
+    @end
+where any expression in the body could be a `break` or `return`
+
+**for loops**
+
+    for [var] in [exp]:
+        [exp list]
+    @end
+where any expression in the body could be a `break` or `return`
+
+See the **List of Transformations** section on the various types of accepted for loops.
+
+**if statements**
+Simple if statements:
+
+    if [exp]:
+	    [exp] list
+	@end
+
+If statements with else-ifs:
+
+    if [exp]:
+	    [exp list]
+	elif [exp2]:
+		[exp list]
+	elif [exp3]:
+		[exp list]
+	...
+	@end
+
+If statements with else:
+
+
+    if [exp]:
+	    [exp] list
+	(...optional elifs...)
+	else:
+		[exp] list
+	@end
+
+**function definitions**
+simple function:
+
+    def fun():
+	    [exp list]
+	@end
+where any expression inside may be a `return` or `return [exp]` command.
+
+functions with n parameters:
+
+    def fun(param1, param2, ...):
+	    [exp list]
+	@end
+**return**
+simple return statement:
+
+    return
+
+returning an expression:
+
+    return [exp]
+**break statements**
+
+    break
+
+**import statements**
+
+
+## Expressions
+**`bexp` expressions**
+
+### React Expressions
+These deserve their own entire section.
+
+## What is NOT Supported
 **String Completeness**
 We don't support the set of all possible strings out there, only a tiny (but still a large) subset of strings. This is a result of how we detect strings in the source code. Hopefully, we can replace our string detector with a more complete implementation.
 
 **Classes**
-Classes are not supported yet, but are coming soon! Hopefully, this should not be a huge problem. We are huge believers in React functional syntax.
+Classes are not supported yet, but are coming soon! Hopefully, this should not be a huge problem. We are huge believers in React functional syntax after all ;)
 
 
 
-## Translation Overview
+# Translation Overview
 
 There are two steps in translation: AST transformation and the translation itself.
+
+### List of Transformations

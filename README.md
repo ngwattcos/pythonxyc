@@ -86,6 +86,7 @@ Comments, commands, and expressions make up a PythonXY program.
 ## Commands
 
 **Assignment and Updates**
+
 Variables can be declared and updated as follows:
 
     # declaring
@@ -113,6 +114,7 @@ where any expression in the body could be a `break` or `return`
 See the **List of Transformations** section on the various types of accepted for loops.
 
 **if statements**
+
 Simple if statements:
 
     if [exp]:
@@ -141,10 +143,12 @@ If statements with else:
 	@end
 
 **function call commands**
+
 These are defined as a `variable expression` followed by an open parenthesis, an arbitrarily long list of expressions (arguments), and a closing paranthesis. Thus, function calls used as commands are synatically identical to functions used as expressions, except that... the function calls are used where only a command is expected. Please see **variable expressions**.
 
 
 **function definitions**
+
 simple function:
 
     def fun():
@@ -157,7 +161,9 @@ functions with n parameters:
     def fun(param1, param2, ...):
 	    [exp list]
 	@end
-**return**
+
+**return statements**
+
 simple return statement:
 
     return
@@ -165,11 +171,25 @@ simple return statement:
 returning an expression:
 
     return [exp]
+
+NOTE: Due to the nature of our parser (which discriminates commands with newlines), the first part of the returned expression MUST start on the same line as the return statement (although the returned expression may itself be multiline). For example:
+
+    
+	    return <Cust1 className={"class-" + variant}>
+	            <Cust2 a="a" b="b">
+	                <Cust3  a={variable} onCancel={callback()}>
+	                </Cust3>
+	            </Cust2>
+	            <Cust4  a={"a"} b={"b"}>
+	            </Cust4>
+	        </Cust1>
+
 **break statements**
 
     break
 
 **import statements**
+
 To take advantage of npm's immense catalogue of third-party modules, (and since the target language is JavaScript/JSX), we opted to use import syntax that is similar to JavaScript's:
 
 import `var list` from `string` 
@@ -183,6 +203,7 @@ import `var list` from `string`
 	import useUser, useProvider from "./hooks"
 
 **exports**
+
 For similar reasons, we support exports in a manner inspired by JavaScript. However, exports arise naturally from `variable updates` and `dicts` in PythonXY.
 
 This is an example of a valid export statement:
@@ -198,6 +219,7 @@ or even:
 
 ## Expressions
 **`bexp` expressions**
+
 the `bexp` type captures the majority of the value types in PythonXY. It also the deepest value type because it is inductively defined. As mentioned above (and as you may observe), order of operations is explicitly defined by combinations of terms in the language, rather than by operator precedence. The base data types are value primitives, parenthetical expressions, and variable expressions (including function calls). This is because such values are atomic. Note that, just like any other language, order of operations can be forced by wrapping the target expression in parentheses.
 
 There are some quirks. Note that `strings` are treated as `aexp`s! This is because an expression like below is possible in Python:
@@ -287,6 +309,7 @@ Here is the full definition of `bexp` expressions from `grammar.mly`:
 	;
 
 **variable expressions**
+
 Variable expressions are inductively defined as follows:
 * variables
 * variable expressions followed by a "." followed by a variable
@@ -308,6 +331,7 @@ A demonstration of variable expressions:
 
    
 **dicts**
+
 Newlines are optional here.
 
     {
@@ -317,6 +341,7 @@ Newlines are optional here.
     }
 
 **lists**
+
 Again, newlines between entries are optional.
 
     [1, 2, True, False, "string", variable]
@@ -326,9 +351,11 @@ Again, newlines between entries are optional.
     lambda x -> x * x
 
 **ints and floats**
+
 NOTE: similar to as mentioned for negative `aexp` values, negative integers and floats are not supported. Instead, use please `0 - x.xxx...` instead.
 
 **strings**
+
 Any sequence of characters recognized by this regular expression:
 
     let _string_ = "\""_anything_*"\""
@@ -337,39 +364,69 @@ where
     let _anything_ = ['a'-'z' 'A' - 'Z' '0' - '9' '!' '@' '#' '$' '%' '^' '&' '*'
 	'(' ')' '[' ']' '-' '_' '=' '+' '{' '}' '|' '\\' ';' ''' ':'
 	 ',' '.' '/' '<' '>' '?' '`' '~' ' ' '\t' '\n']
-As you can see, our string definition is quite limited because we don't support escape sequences, or many other valid Unicode characters for that matter. Please see **String Completeness**.
+As you can see, despite the name, our string definition is quite limited because we don't support escape sequences, or many other valid Unicode characters for that matter. Please see **String Completeness**.
 
 **function calls**
-Same syntax as with function calls as commands above except that the function call is used as an expression.
 
-basic function call expression
+Same syntax as with function calls as commands above, except that the function call is used as an expression.
+
+basic function call expression:
 
     @let t = var.potoot.tamoot[0]()
 
-function call expression with arguments
+function call expression with arguments:
 
     # with arguments
     @let t = var.potoot.tamoot[0](banoonoo, spinooch...)
     
 
-### React and JSX as Expressions
+## React and JSX as Expressions
 Just like in JavaScript JSX, JSX are valid expression types in PythonXY! (We get that the names are confusing. We are confused as to what to call the JSX-looking syntax extensions. Do you have any suggestions?)
 
+**JSX Expression**
+
+Similar to an HTML element, the following makes up a JSX expression:
+* an `opening tag`
+* a series of child components (separated by an arbitrary number of newlines) padded by an arbitrary number of newlines
+* a closing tag
+
+**opening tag**
+
+* "<" followed by a series of `react attributes` of arbitrary length (separated by spaces) followed by ">"
+
+**Returning JSX**
+Here is an example of JSX being returned by a function (written in the style of React functional components):
+
+    # component with attributes with children that also attributes
+	def Nested(props):
+	    return <Cust1 className={"class-" + variant}>
+	            <Cust2 a="a" b="b">
+	                <Cust3  a={variable} onCancel={callback()}>
+	                </Cust3>
+	            </Cust2>
+	            <Cust4  a={"a"} b={"b"}>
+	            </Cust4>
+	        </Cust1>
+	@end
 
 
 
 
 ## What is NOT Supported
 **String Completeness**
-We don't support the set of all possible strings out there, only a tiny (but still a large) subset of strings. This is a result of how we detect strings in the source code. Hopefully, we can replace our string detector with a more complete implementation.
+
+We don't support the set of all possible strings out there, only a tiny (but still a large) subset of strings. This is a result of how we detect strings in the source code. Hopefully, we can replace our string detector with a more complete implementation soon.
 
 **Classes**
+
 Classes are not supported yet, but are coming soon! Hopefully, this should not be a huge problem. We are huge believers in React functional syntax after all ;)
 
 **Tuples**
+
 We opted not to support tuples at the moment simply because the closest equivalent in JavaScript is arrays... which are translated from lists in Python. However, in any instance where a tuple would be used, you may use a list instead.
 
 **Negatives**
+
 We get it, this is super wacky. We just couldn't get this one figured out in time for our homework assignment due date. We promise that this will be rectified soon. For now, as mentioned above, please use `0 - [aexp]`.
 
 
@@ -377,6 +434,7 @@ We get it, this is super wacky. We just couldn't get this one figured out in tim
 
 There are two steps in translation: AST transformation and the translation itself. AST transformation wrangles the AST on some cases. Translation writes the AST to a buffer, which can the be written to a file as the compiled output.
 
+## Transformation
 Transformation is necessary to convert certain commands and expressions into a JavaScript-friendly format. Here are some examples:
 * `print([exp])` should transform into `console.log([exp])`
 * `for i in range(4): ...@end` should transform to `for (let i = 0; i < 4; i++) {...}`
@@ -385,16 +443,19 @@ Transformation is necessary to convert certain commands and expressions into a J
 ### Command Transformations
 Most commands are transformed simply at the top-level that they are detected. This is because few commands recursively need this level of transformation. The exception is `for` loops, which can can occur anywhere in any body of a program (`while` loops don't need to be transformed).
 
+**for loops**
+
+
 ### Expression Transformations
 Expression are recursively transformed at every level of translation. This is because expressions can be recursive.
 
-**Q: How do I use functional features like map, filter, and reduce**
-It's a bit of a mess in Python, which offers them in several different libraries:
+**Q: How do I use functional features like map, filter, and reduce?**
+It's a bit of a mess in Python, which offers them in several different formats:
 * `map([lambda], [exp: list]`
 *  `filter([lambda], [exp: list])`
 * `functools.reduce([lambda], [exp: list]`
 
-However, in JavaScript, each of these functions can be obtained simply by call `.map()`, `.filter()`, and `.reduce()`.  As such, we are currently electing to have the programmer call these methods on a list, unPythonic how it may be:
+However, in JavaScript, each of these functions can be obtained simply by call `.map()`, `.filter()`, and `.reduce()`.  As such, we are currently electing to have the programmer call these methods on a list, unPythonic it may be:
 
     # map
     arr.map(lambda x -> ....)
@@ -406,5 +467,17 @@ However, in JavaScript, each of these functions can be obtained simply by call `
     arr.reduce(lambda a, b -> ..., init)
 
 **len**
-**slice**
+
+`[[len(exp)]]` -> `[[exp]].length`
+
+**array slicing**
+
+`[[exp[a:b]]]` -> `[[exp]].slice(a, b)`'
+
+Note that this transformation is recursive.
+
 **str**
+
+`[[str(exp)]]` -> `String([[exp]])`
+
+## Translation

@@ -252,9 +252,24 @@ Most commands are transformed simply at the top-level that they are detected. Th
 
 ### Expression Transformations
 Expression are recursively transformed at every level of translation. This is because expressions can be recursive.
-**map**
-**filter**
-**reduce**
+
+**Q: How do I use functional features like map, filter, and reduce**
+It's a bit of a mess in Python, which offers them in several different libraries:
+* `map([lambda], [exp: list]`
+*  `filter([lambda], [exp: list])`
+* `functools.reduce([lambda], [exp: list]`
+
+However, in JavaScript, each of these functions can be obtained simply by call `.map()`, `.filter()`, and `.reduce()`.  As such, we are currently electing to have the programmer call these methods on a list, unPythonic how it may be:
+
+    # map
+    arr.map(lambda x -> ....)
+    
+    # filter
+    arr.filter(lambda x -> ....)
+    
+    # reduce
+    arr.reduce(lambda a, b -> ..., init)
+
 **len**
 **slice**
 **str**

@@ -96,16 +96,6 @@ Variables can be declared and updated as follows:
     # suppose such a variable exists
     items[0].get().head += 10
 
-By extension, exports are supported as well. One could easily define:
-
-`modules.exports = varName`
-
-or even
-
-    module.exports = {
-	    "funcName1": funcName1
-    }
-
 **while loops**
 
     while [exp]:
@@ -150,6 +140,10 @@ If statements with else:
 		[exp] list
 	@end
 
+**function call commands**
+These are defined as a `variable expression` followed by an open parenthesis, an arbitrarily long list of expressions (arguments), and a closing paranthesis. Thus, function calls used as commands are synatically identical to functions used as expressions, except that... the function calls are used where only a command is expected. Please see **variable expressions**.
+
+
 **function definitions**
 simple function:
 
@@ -176,12 +170,130 @@ returning an expression:
     break
 
 **import statements**
+To take advantage of npm's immense catalogue of third-party modules, (and since the target language is JavaScript/JSX), we opted to use import syntax that is similar to JavaScript's:
 
+import `var list` from `string` 
+
+    # importing from an npm module
+    import React from "react"
+	import useState, useEffect from "react"
+	
+	# importing from a relative path
+	import MainView from "./components/MainView"
+	import useUser, useProvider from "./hooks"
+
+**exports**
+For similar reasons, we support exports in a manner inspired by JavaScript. However, exports arise naturally from `variable updates` and `dicts` in PythonXY.
+
+This is an example of a valid export statement:
+
+`modules.exports = varName`
+
+or even:
+
+    module.exports = {
+	    "funcName1": funcName1,
+	    "funcName2": funcName2
+    }
 
 ## Expressions
 **`bexp` expressions**
+the `bexp` type captures the majority of the value types in PythonXY. It also the deepest value type because it is inductively defined. As mentioned above (and as you may observe), order of operations is explicitly defined by combinations of terms in the language, rather than by operator precedence. The base data types are value primitives, parenthetical expressions, and variable expressions (including function calls). This is because such values are atomic. Note that, just like any other language, order of operations can be forced by wrapping the target expression in parentheses.
+
+There are some quirks. Note that `strings` are treated as `aexp`s! This is because an expression like below is possible in Python:
+
+`let msg = "Messier " + str(31)`
+
+where it would cumbersome to redefine operands types for the "+" operator for strings. But this results in the acceptance of combinations such as:
+
+`"Messier " + [1, 2, 3, 4] + {"messier ": True}`
+which will not run when transpiled to JavaScript, and
+
+`"Messier " + 123`
+
+which is technically not supposed to be supported... but works in JavaScript.
+
+Other items to note: unlike most other languages, PythonXY does NOT support negatives or negation. This is simply due to human error and we promise to fix this ASAP. On the other hand, you may use expressions such as `(0 - [aexp])`.
+
+Here is the full definition of `bexp` expressions from `grammar.mly`:
+
+    bexp:
+    | or_exp                                                { $1 }
+	;
+
+	or_exp:
+    | or_exp OR and_exp                                     { Or($1, $3) }
+    | and_exp                                               { $1 }
+	;
+
+	and_exp:
+    | and_exp AND not_exp                                   { And($1, $3) }
+    | not_exp                                               { $1 }
+	;
+
+	not_exp:
+    | NOT comparison                                        { Not($2) }
+    | comparison                                            { $1 }
+	;
+
+	comparison:
+    | bexp_primitive DOUBLE_EQUALS bexp_primitive           { EQ($1, $3) }
+    | bexp_primitive NOT_EQUALS bexp_primitive              { NE($1, $3) }
+    | bexp_primitive                                        { $1 }
+	;
+
+
+	bexp_primitive:
+    | BOOL                                                  { Bool(snd $1) }
+    | aexp GE aexp                                          { GE($1, $3) }
+    | aexp GT aexp                                          { GT($1, $3) }
+    | aexp LE aexp                                          { LE($1, $3) }
+    | aexp LT aexp                                          { LT($1, $3) }
+    | aexp                                                  { Aexp($1) }
+	;
+
+	aexp:
+    | modulo_exp                                            { $1 }
+	;
+
+	modulo_exp:
+    | modulo_exp MODULO add_exp                             { Mod($1, $3) }
+    | add_exp                                               { $1 }
+	;
+
+	add_exp:
+    | add_exp PLUS times_exp                                { Plus($1, $3) }
+    | add_exp MINUS times_exp                               { Minus($1, $3) }
+    | times_exp                                             { $1 }
+	;
+
+	times_exp:
+    | times_exp TIMES exponen_exp                           { Times($1, $3) }
+    | times_exp DIVIDE exponen_exp                          { Div($1, $3) }
+    | exponen_exp                                           { $1 }
+	;
+
+	exponen_exp:
+    | exponen_exp EXP aexp_primitive                        { Expon($1, $3) }
+    | aexp_primitive                                        { $1 }
+	;
+
+	aexp_primitive:
+    | INT                                                   { Int(snd $1) }
+    | FLOAT                                                 { Float(snd $1) }
+    | STRING                                                { String(snd $1) }
+    | var_access                                            { VarAccess($1) }
+    | LPAREN exp RPAREN                                     { Paren($2) }
+	;
+
 **variable expressions**
-What we mean by variable expressions:
+Variable expressions are inductively defined as follows:
+* variables
+* variable expressions followed by a "." followed by a variable
+* variable expressions followed by a "[" followed by an `exp` followed by a "]"
+* variable expressions followed by a "(" followed by an arbitrary list of expressions (arguments) followed by a ")" - this is a function call
+
+A demonstration of variable expressions:
 
     # a regular variable
     @let t = obj
@@ -190,14 +302,17 @@ What we mean by variable expressions:
     # an index into an array or dict
     @let vx = obj.velocity[0]
     # a dot into an index
-    @let vx = obj.velocity[0].
+    @let dx = obj.velocity[0].accumulate(5)
 	'''... and so on!'''
-    
+
+
+   
 **dicts**
 Newlines are optional here.
 
     {
-	    [exp1]: [exp2]
+	    [exp1]: [exp2],
+	    [exp3]: [exp4],
 	    ...
     }
 
@@ -211,23 +326,38 @@ Again, newlines between entries are optional.
     lambda x -> x * x
 
 **ints and floats**
+NOTE: similar to as mentioned for negative `aexp` values, negative integers and floats are not supported. Instead, use please `0 - x.xxx...` instead.
+
 **strings**
+Any sequence of characters recognized by this regular expression:
+
+    let _string_ = "\""_anything_*"\""
+where
+
+    let _anything_ = ['a'-'z' 'A' - 'Z' '0' - '9' '!' '@' '#' '$' '%' '^' '&' '*'
+	'(' ')' '[' ']' '-' '_' '=' '+' '{' '}' '|' '\\' ';' ''' ':'
+	 ',' '.' '/' '<' '>' '?' '`' '~' ' ' '\t' '\n']
+As you can see, our string definition is quite limited because we don't support escape sequences, or many other valid Unicode characters for that matter. Please see **String Completeness**.
+
 **function calls**
-Same as with function calls as commands above, but function calls can both return values and/or be used as commands.
+Same syntax as with function calls as commands above except that the function call is used as an expression.
 
-[variable_expression]\(\)
+basic function call expression
 
-    # basic function call
-    @let t = var.potoot.tamoot[0]
+    @let t = var.potoot.tamoot[0]()
 
-[variable_expression]([exp1], [exp2], [exp3],...)
+function call expression with arguments
 
     # with arguments
     @let t = var.potoot.tamoot[0](banoonoo, spinooch...)
     
 
-### React Expressions
-These deserve their own entire section.
+### React and JSX as Expressions
+Just like in JavaScript JSX, JSX are valid expression types in PythonXY! (We get that the names are confusing. We are confused as to what to call the JSX-looking syntax extensions. Do you have any suggestions?)
+
+
+
+
 
 ## What is NOT Supported
 **String Completeness**
@@ -236,6 +366,11 @@ We don't support the set of all possible strings out there, only a tiny (but sti
 **Classes**
 Classes are not supported yet, but are coming soon! Hopefully, this should not be a huge problem. We are huge believers in React functional syntax after all ;)
 
+**Tuples**
+We opted not to support tuples at the moment simply because the closest equivalent in JavaScript is arrays... which are translated from lists in Python. However, in any instance where a tuple would be used, you may use a list instead.
+
+**Negatives**
+We get it, this is super wacky. We just couldn't get this one figured out in time for our homework assignment due date. We promise that this will be rectified soon. For now, as mentioned above, please use `0 - [aexp]`.
 
 
 # Translation Overview

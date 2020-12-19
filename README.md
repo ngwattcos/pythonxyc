@@ -525,11 +525,19 @@ Note that this transformation is recursive.
 `[[str(exp)]]` -> `String([[exp]])`
 
 ## Translation
+The general setup of the translation is as follows:
+
+For every command and expression type in the AST, there exist a function that writes that type to a buffer (aptly named `buf` in our code). This buffer is the one that is used to  write to an output file. At the top-level, there is a translation function that translates a program (a sequence of commands), which passes each individual command to the function that translates commands (`translate_c`), which pattern-matches on the type of command and further passes the pieces of the AST to other translation functions.
+
+Especially for recursive structures types, when the structure is passed to the translation function, the structure is intercepted, then transformed according to our transformation rules as described in **Transformation**, then passed along to be translated.
+
+Simultaneously, the translation keeps track of the indent buffer, named `indbuf`, which increases the indent when in a new block. In this way, if statements, for loops, while statements, function definitions, and nested React components are beautifully indented after transpiled.
 
 ## Coming Soon!
-This is a recap of what is coming soon!
+This is a peek at what is coming soon!
 
 * classes with constructors and methods
+* LSP and syntax highlighting implementation for PythonXY files
 
 ## Errors in Implementation
 The following are errors in implementation (fortunately, these are easily corrected):

@@ -225,17 +225,18 @@ and translate_else coms =
     Buffer.add_string !indbuf "    ";
     translate_coms coms;
     Buffer.truncate !indbuf (undent !indbuf);
+    Buffer.add_buffer !buf !indbuf;
     Buffer.add_string !buf ("}")
 
 and translate_elif e = match e with
 | (e, coms) ->
-    Buffer.add_buffer !buf !indbuf;
     Buffer.add_string !buf " else if (";
     translate_e e;
     Buffer.add_string !buf ") {\n";
     Buffer.add_string !indbuf "    ";
     translate_coms coms;
     Buffer.truncate !indbuf (undent !indbuf);
+    Buffer.add_buffer !buf !indbuf;
     Buffer.add_string !buf ("}")
 
 and translate_if i = match i with
@@ -246,6 +247,7 @@ and translate_if i = match i with
     Buffer.add_string !indbuf "    ";
     translate_coms coms;
     Buffer.truncate !indbuf (undent !indbuf);
+    Buffer.add_buffer !buf !indbuf;
     Buffer.add_string !buf ("}")
 
 and translate_func_def var params_list com_list =

@@ -182,6 +182,7 @@ match (transform_for_com for_com) with
     Buffer.add_string !indbuf "    ";
     translate_coms coms;
     Buffer.truncate !indbuf (undent !indbuf);
+    Buffer.add_buffer !buf !indbuf;
     Buffer.add_string !buf "}";
 | ForIterJS (var1, var2, coms) ->
     Buffer.add_string !buf "for (";
@@ -192,6 +193,7 @@ match (transform_for_com for_com) with
     Buffer.add_string !indbuf "    ";
     translate_coms coms;
     Buffer.truncate !indbuf (undent !indbuf);
+    Buffer.add_buffer !buf !indbuf;
     Buffer.add_string !buf "}";
 | _ -> failwith "incorrectly translated for command"
 
@@ -202,6 +204,7 @@ and translate_while e coms =
     Buffer.add_string !indbuf "    ";
     translate_coms coms;
     Buffer.truncate !indbuf (undent !indbuf);
+    Buffer.add_buffer !buf !indbuf;
     Buffer.add_string !buf "}"
 
 and translate_if_com ic = match ic with
@@ -226,6 +229,7 @@ and translate_else coms =
 
 and translate_elif e = match e with
 | (e, coms) ->
+    Buffer.add_buffer !buf !indbuf;
     Buffer.add_string !buf " else if (";
     translate_e e;
     Buffer.add_string !buf ") {\n";
@@ -245,7 +249,6 @@ and translate_if i = match i with
     Buffer.add_string !buf ("}")
 
 and translate_func_def var params_list com_list =
-    Buffer.add_buffer !buf !indbuf;
     Buffer.add_string !buf "const ";
     translate_var var;
     Buffer.add_string !buf " = (";

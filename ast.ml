@@ -80,7 +80,7 @@ and com =
 | Raise of string
 
 and import =
-| ImportBase of var * var
+| ImportDefault of var * string
 | ImportFrom of (var list) * var
 | ImportBaseString of var * string
 | ImportFromString of (var list) * string

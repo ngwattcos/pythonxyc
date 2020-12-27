@@ -137,11 +137,11 @@ match transform_c c with
 | _ -> failwith "unimplemented command"
 
 and translate_import import = match import with
-| ImportBase (v1, v2) ->
+| ImportDefault (v, str) ->
     Buffer.add_string !buf "import ";
-    Buffer.add_string !buf v2;
+    Buffer.add_string !buf v;
     Buffer.add_string !buf " from '";
-    Buffer.add_string !buf v1;
+    translate_string str;
     Buffer.add_string !buf "'"
 | ImportFrom (lst, var) ->
     Buffer.add_string !buf "import { ";

@@ -157,7 +157,7 @@ and pretty_com = function
 | For fc ->  "For", " for"
 
 and pretty_import = function 
-| ImportBase (v1, v2) -> "ImportBase( " ^ v1 ^ ", " ^ v2 ^ " )", "ImportBase"
+| ImportDefault (v, str) -> "ImportDefault( " ^ v ^ ", " ^ str ^ " )", "ImportDefault"
 | ImportFrom (lst, v) -> "ImportBase( " ^ combine lst "" ^ " )", "ImportFrom"
 | ImportBaseString (v1, str) -> "ImportBaseString( " ^ v1 ^ ", " ^ str ^ " )", "ImportBaseString"
 | ImportFromString (lst, str) -> "ImportBaseString( " ^ combine lst "" ^ " )", "ImportFromString"

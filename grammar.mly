@@ -226,7 +226,7 @@ val_update:
 	| var_access MODULO_EQUALS exp                          { Update($1, ModuloEquals, $3) }
 ;
 
-import: IMPORT VAR AS VAR                                   { ImportBase(snd $2, snd $4) }
+import: IMPORT VAR AS STRING                                { ImportDefault(snd $2, snd $4) }
     | IMPORT var_list FROM VAR                              { ImportFrom($2, snd $4) }
     | IMPORT var_list FROM STRING                           { ImportFromString($2, snd $4) }
 ;

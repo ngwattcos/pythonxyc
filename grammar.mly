@@ -6,7 +6,7 @@ open Ast
 
 
 /* Ocamlyacc Declarations */
-%token <Ast.info> IMPORT FROM AS
+%token <Ast.info> IMPORT EXPORT DEFAULT FROM AS
 %token <Ast.info> JLET JCONST
 %token <Ast.info> NONE
 %token <Ast.info * string> VAR
@@ -227,8 +227,12 @@ val_update:
 ;
 
 import: IMPORT AS VAR FROM STRING                           { ImportDefault(snd $3, snd $5) }
-    | IMPORT var_list FROM VAR                              { ImportFrom($2, snd $4) }
     | IMPORT var_list FROM STRING                           { ImportFromString($2, snd $4) }
+;
+
+export:
+    | EXPORT DEFAULT VAR                                    { ExportDefault(snd $3) }
+    | EXPORT var_list                                       { ExportList($2) }
 ;
 
 var_list:
@@ -332,7 +336,8 @@ command:
     | RETURN exp                                            { ReturnExp($2) }
     | RETURN                                                { Return }
     | BREAK                                                 { Break }
-    | import                                                { Import($1)}
+    | import                                                { Import($1) }
+    | export                                                { Export($1) }
     | CONTINUE                                              { Continue }
 ;
 

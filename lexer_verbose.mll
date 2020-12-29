@@ -248,6 +248,8 @@ let _raise_ = "raise"
 let _delete_ = "delete"
 
 let _import_ = "import"
+let _export_ = "export"
+let _default_ = "default"
 let _from_ = "from"
 let _as_ = "as"
 
@@ -325,6 +327,8 @@ rule token = parse
 | _raise_ { printf "RAISE "; RAISE(info lexbuf) }
 | _delete_ { printf "DELETE "; DELETE(info lexbuf) }
 | _import_ { printf "IMPORT "; IMPORT(info lexbuf) }
+| _export_ { EXPORT(info lexbuf) }
+| _default_ { DEFAULT(info lexbuf) }
 | _from_ { printf "FROM "; FROM(info lexbuf) }
 | _as_ { printf "AS "; AS(info lexbuf) }
 | _jconst_ { printf "CONST "; JCONST(info lexbuf) }

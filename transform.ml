@@ -134,6 +134,7 @@ match transform_c c with
 | Continue ->
     Buffer.add_string !buf "continue";
 | Import import -> translate_import import
+| Export export -> translate_export export
 | _ -> failwith "unimplemented command"
 
 and translate_import import = match import with
@@ -144,17 +145,25 @@ and translate_import import = match import with
     translate_string str;
 | ImportFromString (lst, str) ->
     Buffer.add_string !buf "import { ";
-    translate_import_names lst;
+    translate_names_list lst;
     Buffer.add_string !buf " } from ";
     translate_string str
-| _ -> failwith "incorrectly handled import case"
 
-and translate_import_names lst = match lst with
+and translate_export export = match export with
+| ExportDefault s ->
+    Buffer.add_string !buf "export default ";
+    Buffer.add_string !buf s;
+| ExportList lst ->
+    Buffer.add_string !buf "export { ";
+    translate_names_list lst;
+    Buffer.add_string !buf " }";
+
+and translate_names_list lst = match lst with
 | [] -> ()
 | h::[] ->
     Buffer.add_string !buf h
 | h::t ->
-    translate_import_names t;
+    translate_names_list t;
     Buffer.add_string !buf ", ";
     Buffer.add_string !buf h
 

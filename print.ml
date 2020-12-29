@@ -150,6 +150,7 @@ and pretty_com = function
 | Import i -> 
     let pi1, pi2 = pretty_import i in
     "Import( " ^ pi1 ^ " )", "import " ^ pi2 ^ " "
+| Export e -> "export of some kind", "yeah"
 | Raise s -> "Raise( " ^ s ^ " )", "raise"
 | FuncDef (v, pl, cl) -> "FuncDef", ""
 | While (e, cl) -> "While", "while"
@@ -158,8 +159,6 @@ and pretty_com = function
 
 and pretty_import = function 
 | ImportDefault (v, str) -> "ImportDefault( " ^ v ^ ", " ^ str ^ " )", "ImportDefault"
-| ImportFrom (lst, v) -> "ImportBase( " ^ combine lst "" ^ " )", "ImportFrom"
-| ImportBaseString (v1, str) -> "ImportBaseString( " ^ v1 ^ ", " ^ str ^ " )", "ImportBaseString"
 | ImportFromString (lst, str) -> "ImportBaseString( " ^ combine lst "" ^ " )", "ImportFromString"
 
 and combine lst acc = match lst with

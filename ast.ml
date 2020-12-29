@@ -77,13 +77,16 @@ and com =
 | Break
 | Continue
 | Import of import
+| Export of export
 | Raise of string
 
 and import =
 | ImportDefault of var * string
-| ImportFrom of (var list) * var
-| ImportBaseString of var * string
 | ImportFromString of (var list) * string
+
+and export =
+| ExportDefault of string
+| ExportList of var list
 
 and if_base = exp * (com list)
 and elif = if_base

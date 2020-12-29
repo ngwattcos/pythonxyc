@@ -112,7 +112,9 @@ match c with
     Buffer.add_string !buf ";"
 | Import import ->
     Buffer.add_string !buf ";"
-| _ -> failwith "unimplemented command"
+| Export export ->
+    Buffer.add_string !buf ";"
+| _ -> failwith "trying to add semicolon to unimplemented command"
 
 and translate_c_nosemi (c: com) = 
 match transform_c c with

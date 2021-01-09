@@ -1,3 +1,4 @@
+
 # pythonxyc
 a simple transpiler for PythonXY, a Python-like syntax that compiles down into JSX.
 
@@ -90,7 +91,7 @@ In our parser, we have plenty of variant types for optional newlines. We underst
 As you may have inferred, one important difference between Python and PythonXY is how indentation and scope is handled. In Python, scope is enforced by indentation. While this makes regular Python code look clean overall, we believe that enforcing indentation while having to make a decision on whether to enforce this for JSX as well was the wrong approach. Instead, we opted to use the more common approach of using specifc tokens to delineate the "opening" and "closing" of a scope. In our case, tokens that "open" a scope would be declarations for if, while, for, and functions, while the token that "closes" a scope is `@end`. We chose this token to visually match with Python directives.
 
 ### Variable Declarations
-Python variables and JavaScript variables are handled differently. Python variables are simply declared by name, why nowadays JavaScript developers use the `let` and `const` keywords in their. This poses a problem for us - without an extra layer of static analysis, we would not be able to differentiate variable updates from variable declarations, and then there was the question of deciding whether a variable would be mutable or constant. Instead, we opted to use the keywords `@let` and `@const` to declare mutable and constant variables respectively, in the style of Python decorators.
+Python variables and JavaScript variables are handled differently. Python variables are simply declared by name, while nowadays JavaScript developers can use the `let` and `const` keywords in their variable declarations. This poses a problem for us - without an extra layer of static analysis, we would not be able to differentiate variable updates from variable declarations, and then there was the question of deciding whether a variable would be mutable or constant. Instead, we opted to use the keywords `@let` and `@const` to declare mutable and constant variables respectively, in the style of Python decorators.
 
 # Supported Language Features
 ## The Basics
@@ -220,19 +221,46 @@ NOTE: Due to the nature of our parser (which discriminates commands with newline
 
 To take advantage of npm's immense catalogue of third-party modules, (and since the target language is JavaScript/JSX), we opted to use import syntax that is similar to JavaScript's:
 
-import `var list` from `string` 
+
+**default imports**
+
+import as `var` from `string` 
+
+
+    # default imports
+    import as React from "react"
+    
+	# importing from a relative path
+	import as MainView from "./components/MainView"
+
+
+**named imports**
+
+import as `var list` from `string` 
 
     # importing from an npm module
-    import React from "react"
 	import useState, useEffect from "react"
 	
 	# importing from a relative path
-	import MainView from "./components/MainView"
 	import useUser, useProvider from "./hooks"
+
+The reasoning for such import syntax is to reach a compromise between the syntax of Python and JavaScript while capturing the semantic meaning (unfortunately, this syntax is identical to neither language imports): in JavaScript default imports, the imported module is automatically aliased to the `var` in the import statement! Hence `import as var` to explicitly capture the semantics of the default import statement.
 
 **exports**
 
-For similar reasons, we support exports in a manner inspired by JavaScript. However, exports arise naturally from `variable updates` and `dicts` in PythonXY.
+For similar reasons, we support exports in a manner inspired by both JavaScript and Python.
+
+**default exports (ES6)**
+
+export default `exp`
+
+**named exports (ES6)**
+
+export `var1`, `var2`, ...
+
+**exports (CommonJS)**
+
+Exports in the style of CommonJS can arise naturally from `variable updates` and `dicts` in PythonXY.
 
 This is an example of a valid export statement:
 
@@ -422,6 +450,16 @@ Similar to an HTML element, the following makes up a JSX expression:
 
 * "<" followed by a series of `react attributes` of arbitrary length (separated by spaces) followed by ">"
 
+**attributes**
+
+Just like in JSX, a valid attribute can be in one of two forms:
+
+attrib=`string`
+
+attrib={`exp`}
+
+where `exp` is any valid PythonXY expression
+
 **Returning JSX**
 
 Here is an example of JSX being returned by a function (written in the style of React functional components):
@@ -502,7 +540,7 @@ It's a bit of a mess in Python, which offers them in several different formats:
 *  `filter([lambda], [exp: list])`
 * `functools.reduce([lambda], [exp: list]`
 
-However, in JavaScript, each of these functions can be obtained simply by call `.map()`, `.filter()`, and `.reduce()`.  As such, we are currently electing to have the programmer call these methods on a list, unPythonic it may be:
+However, in JavaScript, each of these functions can be obtained simply by calling `.map()`, `.filter()`, and `.reduce()`.  As such, we are currently electing to have the programmer call these methods on a list, unPythonic it may be:
 
     # map
     arr.map(lambda x -> ....)

@@ -1,7 +1,6 @@
 
 open Ast
 open Lexer
-(* open Lexer_verbose *)
 open Grammar
 open Transform
 open Printf
@@ -44,7 +43,7 @@ let lexbuf = match flag with
 
 (* enable print lexing *)
 let token = match flag with 
-| "l" | "L" -> Lexer_verbose.token
+| "l" | "L" -> Lexer.token
 | _ -> Lexer.token
 
 let ast =

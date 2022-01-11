@@ -1,7 +1,7 @@
 
 open Ast
 open Lexer
-open Lexer_verbose
+(* open Lexer_verbose *)
 open Grammar
 open Transform
 open Printf
